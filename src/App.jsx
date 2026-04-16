@@ -51,23 +51,67 @@ const modes = [
   {
     id: "chord",
     label: "Chord Types",
-    description: "Each shortcut triggers a chord built from the selected chord type.",
+    description:
+      "Each shortcut triggers a chord built from the selected chord type.",
   },
   {
     id: "nns",
     label: "Scale Chords",
-    description: "Play scale-degree chords from the piano keyboard while number and letter keys select the active scale.",
+    description:
+      "Play scale-degree chords from the piano keyboard while number and letter keys select the active scale.",
   },
 ];
 
 const chordTypes = [
-  { shortcut: "z", id: "maj", label: "Major", symbol: "maj", intervals: [0, 4, 7] },
-  { shortcut: "x", id: "min", label: "Minor", symbol: "min", intervals: [0, 3, 7] },
-  { shortcut: "c", id: "dom7", label: "Dominant 7", symbol: "7", intervals: [0, 4, 7, 10] },
-  { shortcut: "v", id: "maj7", label: "Major 7", symbol: "maj7", intervals: [0, 4, 7, 11] },
-  { shortcut: "b", id: "dim7", label: "Diminished 7", symbol: "dim7", intervals: [0, 3, 6, 9] },
-  { shortcut: "n", id: "aug5", label: "Augmented", symbol: "aug5", intervals: [0, 4, 8] },
-  { shortcut: "m", id: "halfDim7", label: "Half-diminished 7", symbol: "m7b5", intervals: [0, 3, 6, 10] },
+  {
+    shortcut: "z",
+    id: "maj",
+    label: "Major",
+    symbol: "maj",
+    intervals: [0, 4, 7],
+  },
+  {
+    shortcut: "x",
+    id: "min",
+    label: "Minor",
+    symbol: "min",
+    intervals: [0, 3, 7],
+  },
+  {
+    shortcut: "c",
+    id: "dom7",
+    label: "Dominant 7",
+    symbol: "7",
+    intervals: [0, 4, 7, 10],
+  },
+  {
+    shortcut: "v",
+    id: "maj7",
+    label: "Major 7",
+    symbol: "maj7",
+    intervals: [0, 4, 7, 11],
+  },
+  {
+    shortcut: "b",
+    id: "dim7",
+    label: "Diminished 7",
+    symbol: "dim7",
+    intervals: [0, 3, 6, 9],
+  },
+  {
+    shortcut: "n",
+    id: "aug5",
+    label: "Augmented",
+    symbol: "aug5",
+    intervals: [0, 4, 8],
+  },
+  {
+    shortcut: "m",
+    id: "halfDim7",
+    label: "Half-diminished 7",
+    symbol: "m7b5",
+    intervals: [0, 3, 6, 10],
+  },
 ];
 
 const chordTypeByShortcut = Object.fromEntries(
@@ -75,22 +119,95 @@ const chordTypeByShortcut = Object.fromEntries(
 );
 
 const defaultChordType = chordTypes[0];
-const nnsScaleShortcuts = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "z", "x", "c"];
+const nnsScaleShortcuts = [
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "z",
+  "x",
+  "c",
+];
 const tonicMidiNumber = Tone.Frequency("C3").toMidi();
 
 const nnsScales = [
-  { id: "diatonic", label: "Diatonic", shortcut: "1", intervals: [0, 2, 4, 5, 7, 9, 11] },
-  { id: "jazzMinor", label: "Jazz Minor", shortcut: "2", intervals: [0, 2, 3, 5, 7, 9, 11] },
-  { id: "neapolitanMinor", label: "Neapolitan Minor", shortcut: "3", intervals: [0, 1, 3, 5, 7, 8, 11] },
-  { id: "gypsyMinor", label: "Gypsy Minor", shortcut: "4", intervals: [0, 2, 3, 6, 7, 8, 10] },
-  { id: "hungarianMinor", label: "Hungarian Minor", shortcut: "5", intervals: [0, 2, 3, 6, 7, 8, 11] },
-  { id: "hungarianMajor", label: "Hungarian Major", shortcut: "6", intervals: [0, 3, 4, 6, 7, 9, 10] },
-  { id: "harmonicMinor", label: "Harmonic Minor", shortcut: "7", intervals: [0, 2, 3, 5, 7, 8, 11] },
-  { id: "doubleHarmonic", label: "Double Harmonic", shortcut: "8", intervals: [0, 1, 4, 5, 7, 8, 11] },
-  { id: "harmonicMajor", label: "Harmonic Major", shortcut: "9", intervals: [0, 2, 4, 5, 7, 8, 11] },
-  { id: "romanianMajor", label: "Romanian Major", shortcut: "z", intervals: [0, 1, 4, 6, 7, 9, 10] },
-  { id: "blues7", label: "Blues 7", shortcut: "x", intervals: [0, 2, 3, 4, 7, 9, 10] },
-  { id: "enigmatic", label: "Enigmatic", shortcut: "c", intervals: [0, 1, 4, 6, 8, 10, 11] },
+  {
+    id: "diatonic",
+    label: "Diatonic",
+    shortcut: "1",
+    intervals: [0, 2, 4, 5, 7, 9, 11],
+  },
+  {
+    id: "jazzMinor",
+    label: "Jazz Minor",
+    shortcut: "2",
+    intervals: [0, 2, 3, 5, 7, 9, 11],
+  },
+  {
+    id: "neapolitanMinor",
+    label: "Neapolitan Minor",
+    shortcut: "3",
+    intervals: [0, 1, 3, 5, 7, 8, 11],
+  },
+  {
+    id: "gypsyMinor",
+    label: "Gypsy Minor",
+    shortcut: "4",
+    intervals: [0, 2, 3, 6, 7, 8, 10],
+  },
+  {
+    id: "hungarianMinor",
+    label: "Hungarian Minor",
+    shortcut: "5",
+    intervals: [0, 2, 3, 6, 7, 8, 11],
+  },
+  {
+    id: "hungarianMajor",
+    label: "Hungarian Major",
+    shortcut: "6",
+    intervals: [0, 3, 4, 6, 7, 9, 10],
+  },
+  {
+    id: "harmonicMinor",
+    label: "Harmonic Minor",
+    shortcut: "7",
+    intervals: [0, 2, 3, 5, 7, 8, 11],
+  },
+  {
+    id: "doubleHarmonic",
+    label: "Double Harmonic",
+    shortcut: "8",
+    intervals: [0, 1, 4, 5, 7, 8, 11],
+  },
+  {
+    id: "harmonicMajor",
+    label: "Harmonic Major",
+    shortcut: "9",
+    intervals: [0, 2, 4, 5, 7, 8, 11],
+  },
+  {
+    id: "romanianMajor",
+    label: "Romanian Major",
+    shortcut: "z",
+    intervals: [0, 1, 4, 6, 7, 9, 10],
+  },
+  {
+    id: "blues7",
+    label: "Blues 7",
+    shortcut: "x",
+    intervals: [0, 2, 3, 4, 7, 9, 10],
+  },
+  {
+    id: "enigmatic",
+    label: "Enigmatic",
+    shortcut: "c",
+    intervals: [0, 1, 4, 6, 8, 10, 11],
+  },
 ];
 
 const nnsScaleByShortcut = Object.fromEntries(
@@ -203,8 +320,14 @@ const getRomanNumeralForScaleStep = (scaleStep, scaleIntervals) => {
   const degree = (scaleStep % scaleIntervals.length) + 1;
   const numeral = romanNumerals[degree - 1] ?? String(degree);
   const rootMidiNumber = getScaleMidiNumberAtStep(scaleStep, scaleIntervals);
-  const thirdMidiNumber = getScaleMidiNumberAtStep(scaleStep + 2, scaleIntervals);
-  const fifthMidiNumber = getScaleMidiNumberAtStep(scaleStep + 4, scaleIntervals);
+  const thirdMidiNumber = getScaleMidiNumberAtStep(
+    scaleStep + 2,
+    scaleIntervals,
+  );
+  const fifthMidiNumber = getScaleMidiNumberAtStep(
+    scaleStep + 4,
+    scaleIntervals,
+  );
   const thirdInterval = thirdMidiNumber - rootMidiNumber;
   const fifthInterval = fifthMidiNumber - rootMidiNumber;
 
@@ -226,8 +349,14 @@ const getRomanNumeralForScaleStep = (scaleStep, scaleIntervals) => {
 const getNnsLabelForScaleStep = (scaleStep, scaleIntervals) => {
   const degree = (scaleStep % scaleIntervals.length) + 1;
   const rootMidiNumber = getScaleMidiNumberAtStep(scaleStep, scaleIntervals);
-  const thirdMidiNumber = getScaleMidiNumberAtStep(scaleStep + 2, scaleIntervals);
-  const fifthMidiNumber = getScaleMidiNumberAtStep(scaleStep + 4, scaleIntervals);
+  const thirdMidiNumber = getScaleMidiNumberAtStep(
+    scaleStep + 2,
+    scaleIntervals,
+  );
+  const fifthMidiNumber = getScaleMidiNumberAtStep(
+    scaleStep + 4,
+    scaleIntervals,
+  );
   const thirdInterval = thirdMidiNumber - rootMidiNumber;
   const fifthInterval = fifthMidiNumber - rootMidiNumber;
 
@@ -258,6 +387,14 @@ const formatScaleDegree = (scaleStep, displayMode, scaleIntervals) => {
   return getNnsLabelForScaleStep(scaleStep, scaleIntervals);
 };
 
+const getSamplerVolumeDb = (volumePercent) => {
+  if (volumePercent <= 0) {
+    return -60;
+  }
+
+  return Tone.gainToDb(volumePercent / 100);
+};
+
 function App() {
   const samplerRef = useRef(null);
   const activeVoicesRef = useRef(new Map());
@@ -270,9 +407,14 @@ function App() {
   const stopAllVoicesRef = useRef(null);
   const [audioStatus, setAudioStatus] = useState("locked");
   const [mode, setMode] = useState("piano");
-  const [selectedChordTypeId, setSelectedChordTypeId] = useState(defaultChordType.id);
-  const [selectedNnsScaleId, setSelectedNnsScaleId] = useState(defaultNnsScale.id);
+  const [selectedChordTypeId, setSelectedChordTypeId] = useState(
+    defaultChordType.id,
+  );
+  const [selectedNnsScaleId, setSelectedNnsScaleId] = useState(
+    defaultNnsScale.id,
+  );
   const [degreeDisplayMode, setDegreeDisplayMode] = useState("roman");
+  const [volume, setVolume] = useState(80);
   const [activeTriggerIds, setActiveTriggerIds] = useState([]);
   const [secondaryActiveMidiNumbers, setSecondaryActiveMidiNumbers] = useState(
     [],
@@ -294,6 +436,7 @@ function App() {
       },
     }).toDestination();
 
+    sampler.volume.value = getSamplerVolumeDb(volume);
     samplerRef.current = sampler;
     return sampler;
   };
@@ -364,9 +507,14 @@ function App() {
       const chordSteps = [scaleStep, scaleStep + 2, scaleStep + 4];
       const midiNumbers = chordSteps.map((step) => {
         const wrappedIndex = step % selectedNnsScale.intervals.length;
-        const octaveOffset = Math.floor(step / selectedNnsScale.intervals.length) * 12;
+        const octaveOffset =
+          Math.floor(step / selectedNnsScale.intervals.length) * 12;
 
-        return tonicMidiNumber + selectedNnsScale.intervals[wrappedIndex] + octaveOffset;
+        return (
+          tonicMidiNumber +
+          selectedNnsScale.intervals[wrappedIndex] +
+          octaveOffset
+        );
       });
 
       return {
@@ -466,6 +614,12 @@ function App() {
       nnsScales.find((scale) => scale.id === selectedNnsScaleId) ??
       defaultNnsScale;
   }, [selectedNnsScaleId]);
+
+  useEffect(() => {
+    if (samplerRef.current) {
+      samplerRef.current.volume.value = getSamplerVolumeDb(volume);
+    }
+  }, [volume]);
 
   useEffect(() => {
     startVoiceRef.current = startVoice;
@@ -579,8 +733,7 @@ function App() {
       degreeDisplayMode,
       nnsScaleRef.current.intervals,
     );
-    const isNnsScaleNote =
-      mode === "nns" && scaleStep !== null;
+    const isNnsScaleNote = mode === "nns" && scaleStep !== null;
     const isDisabledInNns = mode === "nns" && !isNnsScaleNote;
     const keyLabel = note.keyboardShortcut.toUpperCase();
 
@@ -626,6 +779,20 @@ function App() {
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl p-4 md:p-8">
       <header className="mb-4 flex flex-col gap-4 md:mb-6 md:flex-row md:items-center md:justify-between">
+        <label className="flex w-full items-center gap-3 max-w-80 text-sm text-slate-700">
+          <span className="min-w-0 flex-none font-medium">Volume</span>
+          <input
+            className="w-full accent-slate-900"
+            max="100"
+            min="0"
+            onChange={(event) => setVolume(Number(event.target.value))}
+            type="range"
+            value={volume}
+          />
+          <span className="w-10 flex-none text-right font-medium tabular-nums">
+            {volume}
+          </span>
+        </label>
         <div className="space-y-1">
           <h1 className="text-lg font-semibold text-slate-900 md:text-xl">
             Keyboard Mapping
@@ -635,25 +802,27 @@ function App() {
           </p>
         </div>
 
-        <div className="inline-flex w-full rounded-2xl bg-stone-200 md:w-auto">
-          {modes.map((entry) => {
-            const isActive = entry.id === mode;
+        <div className="flex w-full flex-col gap-3 md:w-auto md:items-end">
+          <div className="inline-flex w-full rounded-2xl bg-stone-200 md:w-auto">
+            {modes.map((entry) => {
+              const isActive = entry.id === mode;
 
-            return (
-              <button
-                className={`flex-1 rounded-xl px-4 py-2 text-sm font-medium transition md:flex-none ${
-                  isActive
-                    ? "bg-slate-900 text-stone-50 shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-                key={entry.id}
-                onClick={() => handleModeSelect(entry.id)}
-                type="button"
-              >
-                {entry.label}
-              </button>
-            );
-          })}
+              return (
+                <button
+                  className={`flex-1 rounded-xl px-4 py-2 text-sm font-medium transition md:flex-none ${
+                    isActive
+                      ? "bg-slate-900 text-stone-50 shadow-sm"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                  key={entry.id}
+                  onClick={() => handleModeSelect(entry.id)}
+                  type="button"
+                >
+                  {entry.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </header>
 
@@ -705,7 +874,8 @@ function App() {
 
       {mode === "chord" && (
         <div className="text-sm text-slate-600">
-          Chord types are mapped to `Z X C V B N M` as major, minor, dominant 7, major 7, diminished 7, augmented 5, and half-diminished 7.
+          Chord types are mapped to `Z X C V B N M` as major, minor, dominant 7,
+          major 7, diminished 7, augmented 5, and half-diminished 7.
         </div>
       )}
 
@@ -760,7 +930,10 @@ function App() {
 
       {mode === "nns" && (
         <div className="text-sm text-slate-600">
-          Scale selection is mapped to `{nnsScaleShortcuts.join(" ").toUpperCase()}`. In-scale notes are highlighted on the keyboard, and pressing one plays the corresponding numbered chord.
+          Scale selection is mapped to `
+          {nnsScaleShortcuts.join(" ").toUpperCase()}`. In-scale notes are
+          highlighted on the keyboard, and pressing one plays the corresponding
+          numbered chord.
         </div>
       )}
     </main>
