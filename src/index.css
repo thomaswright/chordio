@@ -99,6 +99,18 @@
     background: #49747d;
   }
 
+  .PianoKey--scale-available.PianoKey--natural:not(.PianoKey--primary-active):not(
+      .PianoKey--secondary-active
+    ) {
+    background: #d9ecff;
+  }
+
+  .PianoKey--scale-available.PianoKey--accidental:not(
+      .PianoKey--primary-active
+    ):not(.PianoKey--secondary-active) {
+    background: #38597b;
+  }
+
   .PianoKey--primary-active.PianoKey--natural {
     background: #ebb052;
     transform: translateY(1px);
@@ -129,6 +141,19 @@
 
   .PianoKey--primary-active .PianoKey__Label {
     color: #18212b;
+  }
+
+  .PianoKey--disabled {
+    cursor: not-allowed;
+    opacity: 0.42;
+  }
+
+  .PianoKey--disabled.PianoKey--natural {
+    background: #d8d3cb;
+  }
+
+  .PianoKey--disabled.PianoKey--accidental {
+    background: #1a232d;
   }
 
   @media (max-width: 900px) {
