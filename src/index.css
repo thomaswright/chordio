@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    font-family:
+      "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    min-height: 100%;
+  }
+
+  body {
+    @apply m-0 min-h-screen bg-stone-200 text-slate-700;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(122, 86, 51, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(122, 86, 51, 0.06) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 85%);
+    pointer-events: none;
+  }
+
+  #root {
+    @apply min-h-screen;
+  }
+}
+
+@layer components {
+  .ReactPiano {
+    @apply h-52 w-full md:h-64;
+  }
+
+  .ReactPiano__Key {
+    border-radius: 0 0 10px 10px;
+    border: 0;
+  }
+
+  .ReactPiano__Key--natural {
+    background: #f5efe4;
+    box-shadow: inset 0 -6px 0 rgba(141, 113, 82, 0.08);
+  }
+
+  .ReactPiano__Key--accidental {
+    background: #22303d;
+  }
+
+  .ReactPiano__Key--active.ReactPiano__Key--natural {
+    background: #ebb052;
+  }
+
+  .ReactPiano__Key--active.ReactPiano__Key--accidental {
+    background: #356b9f;
+  }
+
+  @media (max-width: 900px) {
+    .ReactPiano {
+      min-width: 44rem;
+      height: 13rem;
+    }
+  }
+}
