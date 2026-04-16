@@ -53,6 +53,11 @@ const modes = [
     label: "Chord",
     description: "Each shortcut triggers a chord built from the selected chord type.",
   },
+  {
+    id: "nns",
+    label: "NNS",
+    description: "Number keys trigger scale-degree chords while the letter row selects the active scale.",
+  },
 ];
 
 const chordTypes = [
@@ -70,6 +75,35 @@ const chordTypeByShortcut = Object.fromEntries(
 );
 
 const defaultChordType = chordTypes[0];
+const nnsScaleShortcuts = ["a", "s", "d", "f", "g", "h", "j", "k", "l", ";", "'", "/"];
+const nnsDegreeShortcuts = ["1", "2", "3", "4", "5", "6", "7"];
+const tonicMidiNumber = Tone.Frequency("C3").toMidi();
+
+const nnsScales = [
+  { id: "diatonic", label: "Diatonic", shortcut: "a", intervals: [0, 2, 4, 5, 7, 9, 11] },
+  { id: "jazzMinor", label: "Jazz Minor", shortcut: "s", intervals: [0, 2, 3, 5, 7, 9, 11] },
+  { id: "neapolitanMinor", label: "Neapolitan Minor", shortcut: "d", intervals: [0, 1, 3, 5, 7, 8, 11] },
+  { id: "gypsyMinor", label: "Gypsy Minor", shortcut: "f", intervals: [0, 2, 3, 6, 7, 8, 10] },
+  { id: "hungarianMinor", label: "Hungarian Minor", shortcut: "g", intervals: [0, 2, 3, 6, 7, 8, 11] },
+  { id: "hungarianMajor", label: "Hungarian Major", shortcut: "h", intervals: [0, 3, 4, 6, 7, 9, 10] },
+  { id: "harmonicMinor", label: "Harmonic Minor", shortcut: "j", intervals: [0, 2, 3, 5, 7, 8, 11] },
+  { id: "doubleHarmonic", label: "Double Harmonic", shortcut: "k", intervals: [0, 1, 4, 5, 7, 8, 11] },
+  { id: "harmonicMajor", label: "Harmonic Major", shortcut: "l", intervals: [0, 2, 4, 5, 7, 8, 11] },
+  { id: "romanianMajor", label: "Romanian Major", shortcut: ";", intervals: [0, 1, 4, 6, 7, 9, 10] },
+  { id: "blues7", label: "Blues 7", shortcut: "'", intervals: [0, 2, 3, 4, 7, 9, 10] },
+  { id: "enigmatic", label: "Enigmatic", shortcut: "/", intervals: [0, 1, 4, 6, 8, 10, 11] },
+];
+
+const nnsScaleByShortcut = Object.fromEntries(
+  nnsScales.map((scale) => [scale.shortcut, scale]),
+);
+
+const defaultNnsScale = nnsScales[0];
+const nnsDegrees = nnsDegreeShortcuts.map((shortcut, index) => ({
+  degree: index + 1,
+  shortcut,
+  triggerId: `nns-${index + 1}`,
+}));
 
 const pianoSampleUrls = {
   A0: "A0v10.mp3",
@@ -135,13 +169,15 @@ function App() {
   const pressedKeyboardKeysRef = useRef(new Set());
   const modeRef = useRef("piano");
   const chordTypeRef = useRef(defaultChordType);
+  const nnsScaleRef = useRef(defaultNnsScale);
   const startVoiceRef = useRef(null);
   const releaseVoiceRef = useRef(null);
   const stopAllVoicesRef = useRef(null);
   const [audioStatus, setAudioStatus] = useState("locked");
   const [mode, setMode] = useState("piano");
   const [selectedChordTypeId, setSelectedChordTypeId] = useState(defaultChordType.id);
-  const [primaryActiveMidiNumbers, setPrimaryActiveMidiNumbers] = useState([]);
+  const [selectedNnsScaleId, setSelectedNnsScaleId] = useState(defaultNnsScale.id);
+  const [activeTriggerIds, setActiveTriggerIds] = useState([]);
   const [secondaryActiveMidiNumbers, setSecondaryActiveMidiNumbers] = useState(
     [],
   );
@@ -176,11 +212,11 @@ function App() {
   };
 
   const syncActiveStates = (selectedMode = modeRef.current) => {
-    const primaryMidiNumbers = [...activeVoicesRef.current.keys()];
+    const triggerIds = [...activeVoicesRef.current.keys()];
 
-    setPrimaryActiveMidiNumbers(primaryMidiNumbers);
+    setActiveTriggerIds(triggerIds);
 
-    if (selectedMode !== "chord") {
+    if (selectedMode === "piano") {
       setSecondaryActiveMidiNumbers([]);
       return;
     }
@@ -200,11 +236,13 @@ function App() {
   };
 
   const resolveVoice = (
-    midiNumber,
+    triggerId,
     selectedMode,
     selectedChordType = chordTypeRef.current,
+    selectedNnsScale = nnsScaleRef.current,
   ) => {
     if (selectedMode === "chord") {
+      const midiNumber = Number(triggerId);
       const midiNumbers = selectedChordType.intervals.map(
         (interval) => midiNumber + interval,
       );
@@ -219,6 +257,27 @@ function App() {
       };
     }
 
+    if (selectedMode === "nns") {
+      const degreeIndex = Number.parseInt(String(triggerId).replace("nns-", ""), 10) - 1;
+      const chordSteps = [degreeIndex, degreeIndex + 2, degreeIndex + 4];
+      const midiNumbers = chordSteps.map((step) => {
+        const wrappedIndex = step % selectedNnsScale.intervals.length;
+        const octaveOffset = Math.floor(step / selectedNnsScale.intervals.length) * 12;
+
+        return tonicMidiNumber + selectedNnsScale.intervals[wrappedIndex] + octaveOffset;
+      });
+
+      return {
+        label: `${degreeIndex + 1} (${selectedNnsScale.label})`,
+        midiNumbers,
+        notes: midiNumbers.map((voiceMidiNumber) =>
+          Tone.Frequency(voiceMidiNumber, "midi").toNote(),
+        ),
+      };
+    }
+
+    const midiNumber = Number(triggerId);
+
     return {
       label: Tone.Frequency(midiNumber, "midi").toNote(),
       midiNumbers: [midiNumber],
@@ -226,9 +285,9 @@ function App() {
     };
   };
 
-  const releaseVoice = (midiNumber) => {
+  const releaseVoice = (triggerId) => {
     const sampler = samplerRef.current;
-    const activeVoice = activeVoicesRef.current.get(midiNumber);
+    const activeVoice = activeVoicesRef.current.get(triggerId);
 
     if (sampler && activeVoice) {
       activeVoice.notes.forEach((note) => {
@@ -236,21 +295,21 @@ function App() {
       });
     }
 
-    activeVoicesRef.current.delete(midiNumber);
+    activeVoicesRef.current.delete(triggerId);
     syncActiveStates();
   };
 
-  const startVoice = async (midiNumber, selectedMode = modeRef.current) => {
+  const startVoice = async (triggerId, selectedMode = modeRef.current) => {
     const sampler = await ensureAudioReady();
-    const voice = resolveVoice(midiNumber, selectedMode);
+    const voice = resolveVoice(triggerId, selectedMode);
 
-    releaseVoice(midiNumber);
+    releaseVoice(triggerId);
 
     voice.notes.forEach((note) => {
       sampler.triggerAttack(note);
     });
 
-    activeVoicesRef.current.set(midiNumber, voice);
+    activeVoicesRef.current.set(triggerId, voice);
     syncActiveStates(selectedMode);
   };
 
@@ -279,6 +338,11 @@ function App() {
     setSelectedChordTypeId(nextChordType.id);
   };
 
+  const handleNnsScaleSelect = (nextScale) => {
+    nnsScaleRef.current = nextScale;
+    setSelectedNnsScaleId(nextScale.id);
+  };
+
   useEffect(() => {
     modeRef.current = mode;
   }, [mode]);
@@ -288,6 +352,12 @@ function App() {
       chordTypes.find((chordType) => chordType.id === selectedChordTypeId) ??
       defaultChordType;
   }, [selectedChordTypeId]);
+
+  useEffect(() => {
+    nnsScaleRef.current =
+      nnsScales.find((scale) => scale.id === selectedNnsScaleId) ??
+      defaultNnsScale;
+  }, [selectedNnsScaleId]);
 
   useEffect(() => {
     startVoiceRef.current = startVoice;
@@ -318,10 +388,29 @@ function App() {
 
       const key = event.key.toLowerCase();
       const chordType = chordTypeByShortcut[key];
+      const nnsScale = nnsScaleByShortcut[key];
+      const nnsDegree = nnsDegrees.find((entry) => entry.shortcut === key);
 
       if (modeRef.current === "chord" && chordType) {
         event.preventDefault();
         handleChordTypeSelect(chordType);
+        return;
+      }
+
+      if (modeRef.current === "nns" && nnsScale) {
+        event.preventDefault();
+        handleNnsScaleSelect(nnsScale);
+        return;
+      }
+
+      if (modeRef.current === "nns" && nnsDegree) {
+        if (pressedKeyboardKeysRef.current.has(key)) {
+          return;
+        }
+
+        event.preventDefault();
+        pressedKeyboardKeysRef.current.add(key);
+        void startVoiceRef.current?.(nnsDegree.triggerId, modeRef.current);
         return;
       }
 
@@ -338,6 +427,14 @@ function App() {
 
     const handleKeyUp = (event) => {
       const key = event.key.toLowerCase();
+      const nnsDegree = nnsDegrees.find((entry) => entry.shortcut === key);
+
+      if (modeRef.current === "nns" && nnsDegree) {
+        pressedKeyboardKeysRef.current.delete(key);
+        releaseVoiceRef.current?.(nnsDegree.triggerId);
+        return;
+      }
+
       const midiNumber = midiNumberByShortcut[key];
 
       if (!midiNumber) {
@@ -374,7 +471,7 @@ function App() {
   }, []);
 
   const renderKeyButton = (note) => {
-    const isPrimaryActive = primaryActiveMidiNumbers.includes(note.midiNumber);
+    const isPrimaryActive = activeTriggerIds.includes(note.midiNumber);
     const isSecondaryActive = secondaryActiveMidiNumbers.includes(
       note.midiNumber,
     );
@@ -407,6 +504,40 @@ function App() {
         type="button"
       >
         <span className="PianoKey__Label">{keyLabel}</span>
+      </button>
+    );
+  };
+
+  const renderNnsDegreeButton = ({ degree, shortcut, triggerId }) => {
+    const isActive = activeTriggerIds.includes(triggerId);
+
+    return (
+      <button
+        className={`rounded-3xl border px-4 py-6 text-left transition ${
+          isActive
+            ? "border-amber-400 bg-amber-300 text-slate-950 shadow-sm"
+            : "border-slate-700 bg-slate-900 text-stone-50 hover:border-slate-500"
+        }`}
+        key={triggerId}
+        onPointerDown={(event) => {
+          event.preventDefault();
+          void startVoice(triggerId, "nns");
+        }}
+        onPointerUp={() => {
+          releaseVoice(triggerId);
+        }}
+        onPointerLeave={(event) => {
+          if (event.buttons > 0) {
+            releaseVoice(triggerId);
+          }
+        }}
+        onContextMenu={(event) => event.preventDefault()}
+        type="button"
+      >
+        <div className="text-xs font-medium uppercase tracking-[0.28em] text-stone-400">
+          Key {shortcut}
+        </div>
+        <div className="mt-2 text-4xl font-semibold">{degree}</div>
       </button>
     );
   };
@@ -446,22 +577,27 @@ function App() {
       </header>
 
       <div className="rounded bg-slate-900 p-3 md:p-4">
-        <div className="PianoKeyboard">
-          <div className="PianoKeyboard__Naturals">
-            {naturalNotes.map(renderKeyButton)}
-          </div>
-
-          {accidentalNotes.map((note) => (
-            <div
-              className="PianoKeyboard__AccidentalSlot"
-              key={note.midiNumber}
-              style={{
-                left: `calc(${((note.naturalIndex + 1) / naturalKeyCount) * 100}% - (var(--accidental-width) / 2))`,
-              }}
-            >
-              {renderKeyButton(note)}
+        <div className={mode === "nns" ? "grid gap-3 md:grid-cols-4 xl:grid-cols-7" : "PianoKeyboard"}>
+          {mode !== "nns" && (
+            <div className="PianoKeyboard__Naturals">
+              {naturalNotes.map(renderKeyButton)}
             </div>
-          ))}
+          )}
+
+          {mode !== "nns" &&
+            accidentalNotes.map((note) => (
+              <div
+                className="PianoKeyboard__AccidentalSlot"
+                key={note.midiNumber}
+                style={{
+                  left: `calc(${((note.naturalIndex + 1) / naturalKeyCount) * 100}% - (var(--accidental-width) / 2))`,
+                }}
+              >
+                {renderKeyButton(note)}
+              </div>
+            ))}
+
+          {mode === "nns" && nnsDegrees.map(renderNnsDegreeButton)}
         </div>
       </div>
 
@@ -494,6 +630,38 @@ function App() {
       {mode === "chord" && (
         <div className="text-sm text-slate-600">
           Chord types are mapped to `Z X C V B N M` as major, minor, dominant 7, major 7, diminished 7, augmented 5, and half-diminished 7.
+        </div>
+      )}
+
+      {mode === "nns" && (
+        <div className="mt-4 grid gap-2 md:mb-6 md:grid-cols-2 xl:grid-cols-3">
+          {nnsScales.map((scale) => {
+            const isActive = scale.id === selectedNnsScaleId;
+
+            return (
+              <button
+                className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
+                  isActive
+                    ? "border-cyan-400 bg-cyan-100 text-slate-950"
+                    : "border-stone-300 bg-white text-slate-700 hover:border-stone-400"
+                }`}
+                key={scale.id}
+                onClick={() => handleNnsScaleSelect(scale)}
+                type="button"
+              >
+                <span className="text-sm font-semibold">{scale.label}</span>
+                <span className="rounded-full bg-slate-900 px-2 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-50">
+                  {scale.shortcut}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {mode === "nns" && (
+        <div className="text-sm text-slate-600">
+          Degrees are mapped to `1 2 3 4 5 6 7`. Scales are mapped to `{nnsScaleShortcuts.join(" ").toUpperCase()}`.
         </div>
       )}
     </main>
