@@ -631,15 +631,19 @@ function App() {
     const shouldIgnoreKeyboardEvent = (event) => {
       const target = event.target;
 
+      const isIgnoredFormField =
+        target instanceof HTMLInputElement
+          ? target.type !== "range"
+          : target instanceof HTMLElement &&
+            (target.isContentEditable ||
+              target.tagName === "TEXTAREA" ||
+              target.tagName === "SELECT");
+
       return (
         event.metaKey ||
         event.ctrlKey ||
         event.altKey ||
-        (target instanceof HTMLElement &&
-          (target.isContentEditable ||
-            target.tagName === "INPUT" ||
-            target.tagName === "TEXTAREA" ||
-            target.tagName === "SELECT"))
+        isIgnoredFormField
       );
     };
 
