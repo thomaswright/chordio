@@ -63,7 +63,6 @@
     padding: 0 0 0.55rem;
     border-radius: 0 0 10px 10px;
     font: inherit;
-    text-transform: uppercase;
     cursor: pointer;
     transition:
       background-color 120ms ease,

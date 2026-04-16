@@ -192,16 +192,47 @@ const degreeDisplayModes = [
 
 const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII"];
 
-const formatScaleDegree = (degree, displayMode) => {
-  if (degree === null) {
+const getScaleMidiNumberAtStep = (scaleStep, scaleIntervals) => {
+  const wrappedIndex = scaleStep % scaleIntervals.length;
+  const octaveOffset = Math.floor(scaleStep / scaleIntervals.length) * 12;
+
+  return tonicMidiNumber + scaleIntervals[wrappedIndex] + octaveOffset;
+};
+
+const getRomanNumeralForScaleStep = (scaleStep, scaleIntervals) => {
+  const degree = (scaleStep % scaleIntervals.length) + 1;
+  const numeral = romanNumerals[degree - 1] ?? String(degree);
+  const rootMidiNumber = getScaleMidiNumberAtStep(scaleStep, scaleIntervals);
+  const thirdMidiNumber = getScaleMidiNumberAtStep(scaleStep + 2, scaleIntervals);
+  const fifthMidiNumber = getScaleMidiNumberAtStep(scaleStep + 4, scaleIntervals);
+  const thirdInterval = thirdMidiNumber - rootMidiNumber;
+  const fifthInterval = fifthMidiNumber - rootMidiNumber;
+
+  if (thirdInterval === 3 && fifthInterval === 6) {
+    return `${numeral.toLowerCase()}°`;
+  }
+
+  if (thirdInterval === 4 && fifthInterval === 8) {
+    return `${numeral}+`;
+  }
+
+  if (thirdInterval === 3) {
+    return numeral.toLowerCase();
+  }
+
+  return numeral;
+};
+
+const formatScaleDegree = (scaleStep, displayMode, scaleIntervals) => {
+  if (scaleStep === null) {
     return null;
   }
 
   if (displayMode === "roman") {
-    return romanNumerals[degree - 1] ?? String(degree);
+    return getRomanNumeralForScaleStep(scaleStep, scaleIntervals);
   }
 
-  return String(degree);
+  return String((scaleStep % scaleIntervals.length) + 1);
 };
 
 function App() {
@@ -516,13 +547,17 @@ function App() {
     const isSecondaryActive = secondaryActiveMidiNumbers.includes(
       note.midiNumber,
     );
-    const scaleDegree =
+    const scaleStep =
       mode === "nns"
-        ? getScaleDegree(note.midiNumber, nnsScaleRef.current.intervals)
+        ? getScaleStep(note.midiNumber, nnsScaleRef.current.intervals)
         : null;
-    const displayDegree = formatScaleDegree(scaleDegree, degreeDisplayMode);
+    const displayDegree = formatScaleDegree(
+      scaleStep,
+      degreeDisplayMode,
+      nnsScaleRef.current.intervals,
+    );
     const isNnsScaleNote =
-      mode === "nns" && scaleDegree !== null;
+      mode === "nns" && scaleStep !== null;
     const isDisabledInNns = mode === "nns" && !isNnsScaleNote;
     const keyLabel = note.keyboardShortcut.toUpperCase();
 
