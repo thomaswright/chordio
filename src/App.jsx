@@ -51,41 +51,25 @@ const modes = [
   {
     id: "chord",
     label: "Chord",
-    description: "Each shortcut triggers a diatonic chord in C.",
+    description: "Each shortcut triggers a chord built from the selected chord type.",
   },
 ];
 
-const chordCycle = [
-  { label: "Cmaj7", root: "C3", intervals: [0, 4, 7, 11] },
-  { label: "Dm7", root: "D3", intervals: [0, 3, 7, 10] },
-  { label: "Em7", root: "E3", intervals: [0, 3, 7, 10] },
-  { label: "Fmaj7", root: "F3", intervals: [0, 4, 7, 11] },
-  { label: "G7", root: "G3", intervals: [0, 4, 7, 10] },
-  { label: "Am7", root: "A3", intervals: [0, 3, 7, 10] },
-  { label: "Bm7b5", root: "B3", intervals: [0, 3, 6, 10] },
+const chordTypes = [
+  { shortcut: "z", id: "maj", label: "Major", symbol: "maj", intervals: [0, 4, 7] },
+  { shortcut: "x", id: "min", label: "Minor", symbol: "min", intervals: [0, 3, 7] },
+  { shortcut: "c", id: "dom7", label: "Dominant 7", symbol: "7", intervals: [0, 4, 7, 10] },
+  { shortcut: "v", id: "maj7", label: "Major 7", symbol: "maj7", intervals: [0, 4, 7, 11] },
+  { shortcut: "b", id: "dim7", label: "Diminished 7", symbol: "dim7", intervals: [0, 3, 6, 9] },
+  { shortcut: "n", id: "aug5", label: "Augmented", symbol: "aug5", intervals: [0, 4, 8] },
+  { shortcut: "m", id: "halfDim7", label: "Half-diminished 7", symbol: "m7b5", intervals: [0, 3, 6, 10] },
 ];
 
-const chordMappings = Object.fromEntries(
-  keyboardShortcuts.map(({ midiNumber }, index) => {
-    const chord = chordCycle[index % chordCycle.length];
-    const octaveOffset = Math.floor(index / chordCycle.length) * 12;
-    const rootMidiNumber = Tone.Frequency(chord.root).toMidi() + octaveOffset;
-    const midiNumbers = chord.intervals.map(
-      (interval) => rootMidiNumber + interval,
-    );
-
-    return [
-      midiNumber,
-      {
-        label: chord.label,
-        midiNumbers,
-        notes: midiNumbers.map((voiceMidiNumber) =>
-          Tone.Frequency(voiceMidiNumber, "midi").toNote(),
-        ),
-      },
-    ];
-  }),
+const chordTypeByShortcut = Object.fromEntries(
+  chordTypes.map((chordType) => [chordType.shortcut, chordType]),
 );
+
+const defaultChordType = chordTypes[0];
 
 const pianoSampleUrls = {
   A0: "A0v10.mp3",
@@ -150,11 +134,13 @@ function App() {
   const activeVoicesRef = useRef(new Map());
   const pressedKeyboardKeysRef = useRef(new Set());
   const modeRef = useRef("piano");
+  const chordTypeRef = useRef(defaultChordType);
   const startVoiceRef = useRef(null);
   const releaseVoiceRef = useRef(null);
   const stopAllVoicesRef = useRef(null);
   const [audioStatus, setAudioStatus] = useState("locked");
   const [mode, setMode] = useState("piano");
+  const [selectedChordTypeId, setSelectedChordTypeId] = useState(defaultChordType.id);
   const [primaryActiveMidiNumbers, setPrimaryActiveMidiNumbers] = useState([]);
   const [secondaryActiveMidiNumbers, setSecondaryActiveMidiNumbers] = useState(
     [],
@@ -213,9 +199,24 @@ function App() {
     setSecondaryActiveMidiNumbers(secondaryMidiNumbers);
   };
 
-  const resolveVoice = (midiNumber, selectedMode) => {
+  const resolveVoice = (
+    midiNumber,
+    selectedMode,
+    selectedChordType = chordTypeRef.current,
+  ) => {
     if (selectedMode === "chord") {
-      return chordMappings[midiNumber];
+      const midiNumbers = selectedChordType.intervals.map(
+        (interval) => midiNumber + interval,
+      );
+      const rootNote = Tone.Frequency(midiNumber, "midi").toNote();
+
+      return {
+        label: `${rootNote}${selectedChordType.symbol}`,
+        midiNumbers,
+        notes: midiNumbers.map((voiceMidiNumber) =>
+          Tone.Frequency(voiceMidiNumber, "midi").toNote(),
+        ),
+      };
     }
 
     return {
@@ -273,9 +274,20 @@ function App() {
     setMode(nextMode);
   };
 
+  const handleChordTypeSelect = (nextChordType) => {
+    chordTypeRef.current = nextChordType;
+    setSelectedChordTypeId(nextChordType.id);
+  };
+
   useEffect(() => {
     modeRef.current = mode;
   }, [mode]);
+
+  useEffect(() => {
+    chordTypeRef.current =
+      chordTypes.find((chordType) => chordType.id === selectedChordTypeId) ??
+      defaultChordType;
+  }, [selectedChordTypeId]);
 
   useEffect(() => {
     startVoiceRef.current = startVoice;
@@ -305,6 +317,14 @@ function App() {
       }
 
       const key = event.key.toLowerCase();
+      const chordType = chordTypeByShortcut[key];
+
+      if (modeRef.current === "chord" && chordType) {
+        event.preventDefault();
+        handleChordTypeSelect(chordType);
+        return;
+      }
+
       const midiNumber = midiNumberByShortcut[key];
 
       if (!midiNumber || pressedKeyboardKeysRef.current.has(key)) {
@@ -446,15 +466,34 @@ function App() {
       </div>
 
       {mode === "chord" && (
-        <div className="mt-4 flex flex-wrap gap-2 md:mb-6">
-          {chordCycle.map((chord) => (
-            <span
-              className="rounded-full border border-stone-300 bg-white px-3 py-1 text-xs font-medium tracking-wide text-slate-700"
-              key={chord.label}
-            >
-              {chord.label}
-            </span>
-          ))}
+        <div className="mt-4 grid gap-2 md:mb-6 md:grid-cols-2 xl:grid-cols-4">
+          {chordTypes.map((chordType) => {
+            const isActive = chordType.id === selectedChordTypeId;
+
+            return (
+              <button
+                className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
+                  isActive
+                    ? "border-amber-400 bg-amber-100 text-slate-900"
+                    : "border-stone-300 bg-white text-slate-700 hover:border-stone-400"
+                }`}
+                key={chordType.id}
+                onClick={() => handleChordTypeSelect(chordType)}
+                type="button"
+              >
+                <span className="text-sm font-semibold">{chordType.label}</span>
+                <span className="rounded-full bg-slate-900 px-2 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-50">
+                  {chordType.shortcut}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {mode === "chord" && (
+        <div className="text-sm text-slate-600">
+          Chord types are mapped to `Z X C V B N M` as major, minor, dominant 7, major 7, diminished 7, augmented 5, and half-diminished 7.
         </div>
       )}
     </main>
