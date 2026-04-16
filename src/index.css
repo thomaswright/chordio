@@ -46,6 +46,11 @@
     @apply h-52 w-full md:h-64;
   }
 
+  .ReactPiano__Keyboard {
+    width: 100%;
+    overflow: hidden;
+  }
+
   .ReactPiano__Key {
     border-radius: 0 0 10px 10px;
     border: 0;
@@ -70,7 +75,6 @@
 
   @media (max-width: 900px) {
     .ReactPiano {
-      min-width: 44rem;
       height: 13rem;
     }
   }
