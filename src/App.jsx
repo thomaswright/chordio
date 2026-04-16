@@ -393,72 +393,70 @@ function App() {
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl p-4 md:p-8">
-      <section className="w-full rounded-[28px] border border-slate-900/10 bg-stone-100 p-4 shadow-[0_24px_80px_rgba(39,34,26,0.08)] md:p-6">
-        <header className="mb-4 flex flex-col gap-4 md:mb-6 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-lg font-semibold text-slate-900 md:text-xl">
-              Keyboard Mapping
-            </h1>
-            <p className="text-sm text-slate-600">
-              {modes.find((entry) => entry.id === mode)?.description}
-            </p>
-          </div>
-
-          <div className="inline-flex w-full rounded-2xl bg-stone-200 p-1 md:w-auto">
-            {modes.map((entry) => {
-              const isActive = entry.id === mode;
-
-              return (
-                <button
-                  className={`flex-1 rounded-xl px-4 py-2 text-sm font-medium transition md:flex-none ${
-                    isActive
-                      ? "bg-slate-900 text-stone-50 shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                  key={entry.id}
-                  onClick={() => handleModeSelect(entry.id)}
-                  type="button"
-                >
-                  {entry.label}
-                </button>
-              );
-            })}
-          </div>
-        </header>
-
-        {mode === "chord" && (
-          <div className="mb-4 flex flex-wrap gap-2 md:mb-6">
-            {chordCycle.map((chord) => (
-              <span
-                className="rounded-full border border-stone-300 bg-white px-3 py-1 text-xs font-medium tracking-wide text-slate-700"
-                key={chord.label}
-              >
-                {chord.label}
-              </span>
-            ))}
-          </div>
-        )}
-
-        <div className="rounded-3xl bg-slate-900 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_18px_40px_rgba(17,20,25,0.16)] md:p-4">
-          <div className="PianoKeyboard">
-            <div className="PianoKeyboard__Naturals">
-              {naturalNotes.map(renderKeyButton)}
-            </div>
-
-            {accidentalNotes.map((note) => (
-              <div
-                className="PianoKeyboard__AccidentalSlot"
-                key={note.midiNumber}
-                style={{
-                  left: `calc(${((note.naturalIndex + 1) / naturalKeyCount) * 100}% - (var(--accidental-width) / 2))`,
-                }}
-              >
-                {renderKeyButton(note)}
-              </div>
-            ))}
-          </div>
+      <header className="mb-4 flex flex-col gap-4 md:mb-6 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-lg font-semibold text-slate-900 md:text-xl">
+            Keyboard Mapping
+          </h1>
+          <p className="text-sm text-slate-600">
+            {modes.find((entry) => entry.id === mode)?.description}
+          </p>
         </div>
-      </section>
+
+        <div className="inline-flex w-full rounded-2xl bg-stone-200 md:w-auto">
+          {modes.map((entry) => {
+            const isActive = entry.id === mode;
+
+            return (
+              <button
+                className={`flex-1 rounded-xl px-4 py-2 text-sm font-medium transition md:flex-none ${
+                  isActive
+                    ? "bg-slate-900 text-stone-50 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+                key={entry.id}
+                onClick={() => handleModeSelect(entry.id)}
+                type="button"
+              >
+                {entry.label}
+              </button>
+            );
+          })}
+        </div>
+      </header>
+
+      <div className="rounded bg-slate-900 p-3 md:p-4">
+        <div className="PianoKeyboard">
+          <div className="PianoKeyboard__Naturals">
+            {naturalNotes.map(renderKeyButton)}
+          </div>
+
+          {accidentalNotes.map((note) => (
+            <div
+              className="PianoKeyboard__AccidentalSlot"
+              key={note.midiNumber}
+              style={{
+                left: `calc(${((note.naturalIndex + 1) / naturalKeyCount) * 100}% - (var(--accidental-width) / 2))`,
+              }}
+            >
+              {renderKeyButton(note)}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {mode === "chord" && (
+        <div className="mt-4 flex flex-wrap gap-2 md:mb-6">
+          {chordCycle.map((chord) => (
+            <span
+              className="rounded-full border border-stone-300 bg-white px-3 py-1 text-xs font-medium tracking-wide text-slate-700"
+              key={chord.label}
+            >
+              {chord.label}
+            </span>
+          ))}
+        </div>
+      )}
     </main>
   );
 }
