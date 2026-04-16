@@ -44,11 +44,6 @@ const midiNumberByShortcut = Object.fromEntries(
 
 const modes = [
   {
-    id: "piano",
-    label: "Piano",
-    description: "Each shortcut plays a single piano note.",
-  },
-  {
     id: "chord",
     label: "Chord Types",
     description:
@@ -59,6 +54,11 @@ const modes = [
     label: "Scale Chords",
     description:
       "Play scale-degree chords from the piano keyboard while number and letter keys select the active scale.",
+  },
+  {
+    id: "piano",
+    label: "Free Piano",
+    description: "Each shortcut plays a single piano note.",
   },
 ];
 
@@ -306,6 +306,11 @@ const degreeDisplayModes = [
   { id: "roman", label: "Roman Numeral" },
   { id: "nns", label: "NNS" },
 ];
+const pianoLabelModes = [
+  { id: "key", label: "Key" },
+  { id: "note", label: "Note" },
+  { id: "none", label: "None" },
+];
 const nnsChordToneOptions = [
   { id: 0, label: "1" },
   { id: 1, label: "2" },
@@ -396,6 +401,8 @@ const formatScaleDegree = (scaleStep, displayMode, scaleIntervals) => {
   return getNnsLabelForScaleStep(scaleStep, scaleIntervals);
 };
 
+const getDisplayNoteName = (noteName) => noteName.replace(/[0-9]/g, "");
+
 const getSamplerVolumeDb = (volumePercent) => {
   if (volumePercent <= 0) {
     return -60;
@@ -408,14 +415,14 @@ function App() {
   const samplerRef = useRef(null);
   const activeVoicesRef = useRef(new Map());
   const pressedKeyboardKeysRef = useRef(new Set());
-  const modeRef = useRef("piano");
+  const modeRef = useRef("nns");
   const chordTypeRef = useRef(defaultChordType);
   const nnsScaleRef = useRef(defaultNnsScale);
   const startVoiceRef = useRef(null);
   const releaseVoiceRef = useRef(null);
   const stopAllVoicesRef = useRef(null);
   const [audioStatus, setAudioStatus] = useState("locked");
-  const [mode, setMode] = useState("piano");
+  const [mode, setMode] = useState("nns");
   const [selectedChordTypeId, setSelectedChordTypeId] = useState(
     defaultChordType.id,
   );
@@ -423,6 +430,7 @@ function App() {
     defaultNnsScale.id,
   );
   const [degreeDisplayMode, setDegreeDisplayMode] = useState("roman");
+  const [pianoLabelMode, setPianoLabelMode] = useState("key");
   const [selectedNnsChordToneIds, setSelectedNnsChordToneIds] = useState([
     0, 2, 4,
   ]);
@@ -625,7 +633,9 @@ function App() {
       pressedKeyboardKeysRef.current.clear();
 
       if (isSelected) {
-        return currentToneIds.filter((currentToneId) => currentToneId !== toneId);
+        return currentToneIds.filter(
+          (currentToneId) => currentToneId !== toneId,
+        );
       }
 
       return [...currentToneIds, toneId].sort((left, right) => left - right);
@@ -673,10 +683,7 @@ function App() {
               target.tagName === "SELECT");
 
       return (
-        event.metaKey ||
-        event.ctrlKey ||
-        event.altKey ||
-        isIgnoredFormField
+        event.metaKey || event.ctrlKey || event.altKey || isIgnoredFormField
       );
     };
 
@@ -772,7 +779,16 @@ function App() {
     );
     const isNnsScaleNote = mode === "nns" && scaleStep !== null;
     const isDisabledInNns = mode === "nns" && !isNnsScaleNote;
-    const keyLabel = note.keyboardShortcut.toUpperCase();
+    const primaryLabel =
+      pianoLabelMode === "key"
+        ? note.keyboardShortcut.toUpperCase()
+        : pianoLabelMode === "note"
+          ? getDisplayNoteName(note.noteName)
+          : "";
+    const fullLabel =
+      primaryLabel && displayDegree !== null
+        ? `${primaryLabel} · ${displayDegree}`
+        : primaryLabel || displayDegree || "";
 
     return (
       <button
@@ -805,10 +821,9 @@ function App() {
         onContextMenu={(event) => event.preventDefault()}
         type="button"
       >
-        <span className="PianoKey__Label">
-          {keyLabel}
-          {displayDegree !== null ? ` · ${displayDegree}` : ""}
-        </span>
+        {fullLabel ? (
+          <span className="PianoKey__Label">{fullLabel}</span>
+        ) : null}
       </button>
     );
   };
@@ -816,20 +831,48 @@ function App() {
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl p-4 md:p-8">
       <header className="mb-4 flex flex-col gap-4 md:mb-6 md:flex-row md:items-center md:justify-between">
-        <label className="flex w-full items-center gap-3 max-w-80 text-sm text-slate-700">
-          <span className="min-w-0 flex-none font-medium">Volume</span>
-          <input
-            className="w-full accent-slate-900"
-            max="100"
-            min="0"
-            onChange={(event) => setVolume(Number(event.target.value))}
-            type="range"
-            value={volume}
-          />
-          <span className="w-10 flex-none text-right font-medium tabular-nums">
-            {volume}
-          </span>
-        </label>
+        <div className="flex w-full max-w-md flex-col gap-3">
+          <div className="flex flex-row gap-3 items-center">
+            <div className="mb-1 text-sm font-medium text-slate-700 flex-none">
+              Piano Label
+            </div>
+            <div className="inline-flex w-full rounded-2xl bg-stone-200">
+              {pianoLabelModes.map((entry) => {
+                const isActive = entry.id === pianoLabelMode;
+
+                return (
+                  <button
+                    className={`flex-1 rounded-xl px-4 py-2 text-sm font-medium transition ${
+                      isActive
+                        ? "bg-slate-900 text-stone-50 shadow-sm"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                    key={entry.id}
+                    onClick={() => setPianoLabelMode(entry.id)}
+                    type="button"
+                  >
+                    {entry.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <label className="flex w-full items-center gap-3 text-sm text-slate-700">
+            <span className="min-w-0 flex-none font-medium">Volume</span>
+            <input
+              className="w-full accent-slate-900"
+              max="100"
+              min="0"
+              onChange={(event) => setVolume(Number(event.target.value))}
+              type="range"
+              value={volume}
+            />
+            <span className="w-10 flex-none text-right font-medium tabular-nums">
+              {volume}
+            </span>
+          </label>
+        </div>
         <div className="space-y-1">
           <h1 className="text-lg font-semibold text-slate-900 md:text-xl">
             Keyboard Mapping
@@ -909,13 +952,6 @@ function App() {
         </div>
       )}
 
-      {mode === "chord" && (
-        <div className="text-sm text-slate-600">
-          Chord types are mapped to `Z X C V B N M` as major, minor, dominant 7,
-          major 7, diminished 7, augmented 5, and half-diminished 7.
-        </div>
-      )}
-
       {mode === "nns" && (
         <div className="mt-4">
           <div className="mb-2 text-sm font-medium text-slate-800">
@@ -990,15 +1026,6 @@ function App() {
               </button>
             );
           })}
-        </div>
-      )}
-
-      {mode === "nns" && (
-        <div className="text-sm text-slate-600">
-          Scale selection is mapped to `
-          {nnsScaleShortcuts.join(" ").toUpperCase()}`. In-scale notes are
-          highlighted on the keyboard, and pressing one plays the corresponding
-          numbered chord.
         </div>
       )}
     </main>
