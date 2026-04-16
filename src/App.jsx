@@ -589,7 +589,6 @@ function App() {
         className={[
           "PianoKey",
           note.isAccidental ? "PianoKey--accidental" : "PianoKey--natural",
-          isNnsScaleNote ? "PianoKey--scale-available" : "",
           isDisabledInNns ? "PianoKey--disabled" : "",
           isPrimaryActive ? "PianoKey--primary-active" : "",
           isSecondaryActive ? "PianoKey--secondary-active" : "",

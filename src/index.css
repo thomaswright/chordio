@@ -98,18 +98,6 @@
     background: #49747d;
   }
 
-  .PianoKey--scale-available.PianoKey--natural:not(.PianoKey--primary-active):not(
-      .PianoKey--secondary-active
-    ) {
-    background: #d9ecff;
-  }
-
-  .PianoKey--scale-available.PianoKey--accidental:not(
-      .PianoKey--primary-active
-    ):not(.PianoKey--secondary-active) {
-    background: #38597b;
-  }
-
   .PianoKey--primary-active.PianoKey--natural {
     background: #ebb052;
     transform: translateY(1px);
