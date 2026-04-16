@@ -577,29 +577,30 @@ function App() {
       </header>
 
       <div className="rounded bg-slate-900 p-3 md:p-4">
-        <div className={mode === "nns" ? "grid gap-3 md:grid-cols-4 xl:grid-cols-7" : "PianoKeyboard"}>
-          {mode !== "nns" && (
-            <div className="PianoKeyboard__Naturals">
-              {naturalNotes.map(renderKeyButton)}
+        <div className="PianoKeyboard">
+          <div className="PianoKeyboard__Naturals">
+            {naturalNotes.map(renderKeyButton)}
+          </div>
+
+          {accidentalNotes.map((note) => (
+            <div
+              className="PianoKeyboard__AccidentalSlot"
+              key={note.midiNumber}
+              style={{
+                left: `calc(${((note.naturalIndex + 1) / naturalKeyCount) * 100}% - (var(--accidental-width) / 2))`,
+              }}
+            >
+              {renderKeyButton(note)}
             </div>
-          )}
-
-          {mode !== "nns" &&
-            accidentalNotes.map((note) => (
-              <div
-                className="PianoKeyboard__AccidentalSlot"
-                key={note.midiNumber}
-                style={{
-                  left: `calc(${((note.naturalIndex + 1) / naturalKeyCount) * 100}% - (var(--accidental-width) / 2))`,
-                }}
-              >
-                {renderKeyButton(note)}
-              </div>
-            ))}
-
-          {mode === "nns" && nnsDegrees.map(renderNnsDegreeButton)}
+          ))}
         </div>
       </div>
+
+      {mode === "nns" && (
+        <div className="mt-4 grid gap-3 md:grid-cols-4 xl:grid-cols-7">
+          {nnsDegrees.map(renderNnsDegreeButton)}
+        </div>
+      )}
 
       {mode === "chord" && (
         <div className="mt-4 grid gap-2 md:mb-6 md:grid-cols-2 xl:grid-cols-4">
