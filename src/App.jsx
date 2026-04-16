@@ -223,6 +223,29 @@ const getRomanNumeralForScaleStep = (scaleStep, scaleIntervals) => {
   return numeral;
 };
 
+const getNnsLabelForScaleStep = (scaleStep, scaleIntervals) => {
+  const degree = (scaleStep % scaleIntervals.length) + 1;
+  const rootMidiNumber = getScaleMidiNumberAtStep(scaleStep, scaleIntervals);
+  const thirdMidiNumber = getScaleMidiNumberAtStep(scaleStep + 2, scaleIntervals);
+  const fifthMidiNumber = getScaleMidiNumberAtStep(scaleStep + 4, scaleIntervals);
+  const thirdInterval = thirdMidiNumber - rootMidiNumber;
+  const fifthInterval = fifthMidiNumber - rootMidiNumber;
+
+  if (thirdInterval === 3 && fifthInterval === 6) {
+    return `${degree}°`;
+  }
+
+  if (thirdInterval === 4 && fifthInterval === 8) {
+    return `${degree}+`;
+  }
+
+  if (thirdInterval === 3) {
+    return `${degree}-`;
+  }
+
+  return String(degree);
+};
+
 const formatScaleDegree = (scaleStep, displayMode, scaleIntervals) => {
   if (scaleStep === null) {
     return null;
@@ -232,7 +255,7 @@ const formatScaleDegree = (scaleStep, displayMode, scaleIntervals) => {
     return getRomanNumeralForScaleStep(scaleStep, scaleIntervals);
   }
 
-  return String((scaleStep % scaleIntervals.length) + 1);
+  return getNnsLabelForScaleStep(scaleStep, scaleIntervals);
 };
 
 function App() {
