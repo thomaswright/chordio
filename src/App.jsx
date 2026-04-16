@@ -185,6 +185,25 @@ const getScaleDegree = (midiNumber, scaleIntervals) => {
   return (scaleStep % scaleIntervals.length) + 1;
 };
 
+const degreeDisplayModes = [
+  { id: "roman", label: "Roman Numeral" },
+  { id: "nns", label: "NNS" },
+];
+
+const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII"];
+
+const formatScaleDegree = (degree, displayMode) => {
+  if (degree === null) {
+    return null;
+  }
+
+  if (displayMode === "roman") {
+    return romanNumerals[degree - 1] ?? String(degree);
+  }
+
+  return String(degree);
+};
+
 function App() {
   const samplerRef = useRef(null);
   const activeVoicesRef = useRef(new Map());
@@ -199,6 +218,7 @@ function App() {
   const [mode, setMode] = useState("piano");
   const [selectedChordTypeId, setSelectedChordTypeId] = useState(defaultChordType.id);
   const [selectedNnsScaleId, setSelectedNnsScaleId] = useState(defaultNnsScale.id);
+  const [degreeDisplayMode, setDegreeDisplayMode] = useState("roman");
   const [activeTriggerIds, setActiveTriggerIds] = useState([]);
   const [secondaryActiveMidiNumbers, setSecondaryActiveMidiNumbers] = useState(
     [],
@@ -500,6 +520,7 @@ function App() {
       mode === "nns"
         ? getScaleDegree(note.midiNumber, nnsScaleRef.current.intervals)
         : null;
+    const displayDegree = formatScaleDegree(scaleDegree, degreeDisplayMode);
     const isNnsScaleNote =
       mode === "nns" && scaleDegree !== null;
     const isDisabledInNns = mode === "nns" && !isNnsScaleNote;
@@ -539,7 +560,7 @@ function App() {
       >
         <span className="PianoKey__Label">
           {keyLabel}
-          {scaleDegree !== null ? ` · ${scaleDegree}` : ""}
+          {displayDegree !== null ? ` · ${displayDegree}` : ""}
         </span>
       </button>
     );
@@ -628,6 +649,29 @@ function App() {
       {mode === "chord" && (
         <div className="text-sm text-slate-600">
           Chord types are mapped to `Z X C V B N M` as major, minor, dominant 7, major 7, diminished 7, augmented 5, and half-diminished 7.
+        </div>
+      )}
+
+      {mode === "nns" && (
+        <div className="mt-4 inline-flex w-full rounded-2xl bg-stone-200 md:w-auto">
+          {degreeDisplayModes.map((entry) => {
+            const isActive = entry.id === degreeDisplayMode;
+
+            return (
+              <button
+                className={`flex-1 rounded-xl px-4 py-2 text-sm font-medium transition md:flex-none ${
+                  isActive
+                    ? "bg-slate-900 text-stone-50 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+                key={entry.id}
+                onClick={() => setDegreeDisplayMode(entry.id)}
+                type="button"
+              >
+                {entry.label}
+              </button>
+            );
+          })}
         </div>
       )}
 
