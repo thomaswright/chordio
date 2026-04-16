@@ -40,14 +40,18 @@ const chordMappings = Object.fromEntries(
     const chord = chordCycle[index % chordCycle.length];
     const octaveOffset = Math.floor(index / chordCycle.length) * 12;
     const rootMidiNumber = MidiNumbers.fromNote(chord.root) + octaveOffset;
-    const notes = chord.intervals.map((interval) =>
-      Tone.Frequency(rootMidiNumber + interval, "midi").toNote(),
+    const midiNumbers = chord.intervals.map(
+      (interval) => rootMidiNumber + interval,
+    );
+    const notes = midiNumbers.map((noteMidiNumber) =>
+      Tone.Frequency(noteMidiNumber, "midi").toNote(),
     );
 
     return [
       midiNumber,
       {
         label: chord.label,
+        midiNumbers,
         notes,
       },
     ];
@@ -94,6 +98,9 @@ function App() {
   const [pianoWidth, setPianoWidth] = useState(960);
   const [audioStatus, setAudioStatus] = useState("locked");
   const [mode, setMode] = useState("piano");
+  const [secondaryActiveMidiNumbers, setSecondaryActiveMidiNumbers] = useState(
+    [],
+  );
 
   const createSampler = () => {
     if (samplerRef.current) {
@@ -131,8 +138,29 @@ function App() {
 
     return {
       label: Tone.Frequency(midiNumber, "midi").toNote(),
+      midiNumbers: [midiNumber],
       notes: [Tone.Frequency(midiNumber, "midi").toNote()],
     };
+  };
+
+  const syncSecondaryActiveMidiNumbers = (selectedMode = mode) => {
+    if (selectedMode !== "chord") {
+      setSecondaryActiveMidiNumbers([]);
+      return;
+    }
+
+    const midiNumbers = [
+      ...new Set(
+        [...activeVoicesRef.current.entries()].flatMap(
+          ([triggerMidiNumber, voice]) =>
+            voice.midiNumbers.filter(
+              (voiceMidiNumber) => voiceMidiNumber !== triggerMidiNumber,
+            ),
+        ),
+      ),
+    ];
+
+    setSecondaryActiveMidiNumbers(midiNumbers);
   };
 
   const releaseVoice = (midiNumber) => {
@@ -146,6 +174,7 @@ function App() {
     }
 
     activeVoicesRef.current.delete(midiNumber);
+    syncSecondaryActiveMidiNumbers();
   };
 
   const playNote = async (midiNumber) => {
@@ -159,10 +188,19 @@ function App() {
     });
 
     activeVoicesRef.current.set(midiNumber, voice);
+    syncSecondaryActiveMidiNumbers();
   };
 
   const stopNote = (midiNumber) => {
     releaseVoice(midiNumber);
+  };
+
+  const handleModeSelect = (nextMode) => {
+    activeVoicesRef.current.forEach((_, midiNumber) => {
+      releaseVoice(midiNumber);
+    });
+    setSecondaryActiveMidiNumbers([]);
+    setMode(nextMode);
   };
 
   useEffect(() => {
@@ -184,21 +222,62 @@ function App() {
   }, []);
 
   useEffect(() => {
-    activeVoicesRef.current.forEach((_, midiNumber) => {
-      releaseVoice(midiNumber);
-    });
-  }, [mode]);
-
-  useEffect(() => {
     const activeVoices = activeVoicesRef.current;
+    const sampler = samplerRef.current;
 
     return () => {
-      activeVoices.forEach((_, midiNumber) => {
-        releaseVoice(midiNumber);
+      activeVoices.forEach((voice) => {
+        voice.notes.forEach((note) => {
+          sampler?.triggerRelease(note);
+        });
       });
-      samplerRef.current?.dispose();
+      activeVoices.clear();
+      sampler?.dispose();
     };
   }, []);
+
+  const renderNoteLabel = ({
+    keyboardShortcut,
+    midiNumber,
+    isActive,
+    isAccidental,
+  }) => {
+    const isSecondaryActive =
+      mode === "chord" &&
+      secondaryActiveMidiNumbers.includes(midiNumber) &&
+      !isActive;
+
+    if (!keyboardShortcut && !isSecondaryActive) {
+      return null;
+    }
+
+    return (
+      <div className="ReactPiano__NoteStack">
+        {isSecondaryActive && (
+          <span
+            className={`ReactPiano__ExtraIndicator ${
+              isAccidental
+                ? "ReactPiano__ExtraIndicator--accidental"
+                : "ReactPiano__ExtraIndicator--natural"
+            }`}
+          />
+        )}
+        {keyboardShortcut ? (
+          <span
+            className={`ReactPiano__NoteLabel ${
+              isActive ? "ReactPiano__NoteLabel--active" : ""
+            } ${
+              isAccidental
+                ? "ReactPiano__NoteLabel--accidental"
+                : "ReactPiano__NoteLabel--natural"
+            }`}
+          >
+            {keyboardShortcut}
+          </span>
+        ) : null}
+      </div>
+    );
+  };
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl p-4 md:p-8">
@@ -225,7 +304,7 @@ function App() {
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                   key={entry.id}
-                  onClick={() => setMode(entry.id)}
+                  onClick={() => handleModeSelect(entry.id)}
                   type="button"
                 >
                   {entry.label}
@@ -255,6 +334,7 @@ function App() {
           <Piano
             noteRange={{ first: firstNote, last: lastNote }}
             playNote={playNote}
+            renderNoteLabel={renderNoteLabel}
             stopNote={stopNote}
             width={pianoWidth}
             keyboardShortcuts={keyboardShortcuts}
