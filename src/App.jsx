@@ -306,6 +306,15 @@ const degreeDisplayModes = [
   { id: "roman", label: "Roman Numeral" },
   { id: "nns", label: "NNS" },
 ];
+const nnsChordToneOptions = [
+  { id: 0, label: "1" },
+  { id: 1, label: "2" },
+  { id: 2, label: "3" },
+  { id: 3, label: "4" },
+  { id: 4, label: "5" },
+  { id: 5, label: "6" },
+  { id: 6, label: "7" },
+];
 
 const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII"];
 
@@ -414,6 +423,9 @@ function App() {
     defaultNnsScale.id,
   );
   const [degreeDisplayMode, setDegreeDisplayMode] = useState("roman");
+  const [selectedNnsChordToneIds, setSelectedNnsChordToneIds] = useState([
+    0, 2, 4,
+  ]);
   const [volume, setVolume] = useState(80);
   const [activeTriggerIds, setActiveTriggerIds] = useState([]);
   const [secondaryActiveMidiNumbers, setSecondaryActiveMidiNumbers] = useState(
@@ -504,7 +516,9 @@ function App() {
         return null;
       }
 
-      const chordSteps = [scaleStep, scaleStep + 2, scaleStep + 4];
+      const chordSteps = selectedNnsChordToneIds.map(
+        (toneId) => scaleStep + toneId,
+      );
       const midiNumbers = chordSteps.map((step) => {
         const wrappedIndex = step % selectedNnsScale.intervals.length;
         const octaveOffset =
@@ -597,6 +611,25 @@ function App() {
     pressedKeyboardKeysRef.current.clear();
     nnsScaleRef.current = nextScale;
     setSelectedNnsScaleId(nextScale.id);
+  };
+
+  const handleNnsChordToneToggle = (toneId) => {
+    setSelectedNnsChordToneIds((currentToneIds) => {
+      const isSelected = currentToneIds.includes(toneId);
+
+      if (isSelected && currentToneIds.length === 1) {
+        return currentToneIds;
+      }
+
+      stopAllVoices();
+      pressedKeyboardKeysRef.current.clear();
+
+      if (isSelected) {
+        return currentToneIds.filter((currentToneId) => currentToneId !== toneId);
+      }
+
+      return [...currentToneIds, toneId].sort((left, right) => left - right);
+    });
   };
 
   useEffect(() => {
@@ -880,6 +913,34 @@ function App() {
         <div className="text-sm text-slate-600">
           Chord types are mapped to `Z X C V B N M` as major, minor, dominant 7,
           major 7, diminished 7, augmented 5, and half-diminished 7.
+        </div>
+      )}
+
+      {mode === "nns" && (
+        <div className="mt-4">
+          <div className="mb-2 text-sm font-medium text-slate-800">
+            Chord Degrees
+          </div>
+          <div className="grid gap-2 grid-cols-4 sm:grid-cols-7">
+            {nnsChordToneOptions.map((toneOption) => {
+              const isActive = selectedNnsChordToneIds.includes(toneOption.id);
+
+              return (
+                <button
+                  className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
+                    isActive
+                      ? "border-slate-900 bg-slate-900 text-stone-50"
+                      : "border-stone-300 bg-white text-slate-700 hover:border-stone-400"
+                  }`}
+                  key={toneOption.id}
+                  onClick={() => handleNnsChordToneToggle(toneOption.id)}
+                  type="button"
+                >
+                  {toneOption.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 
