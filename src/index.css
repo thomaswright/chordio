@@ -1,7 +1,54 @@
 @import "tailwindcss";
 
+@theme inline {
+  --color-theme-50: var(--theme-50);
+  --color-theme-100: var(--theme-100);
+  --color-theme-200: var(--theme-200);
+  --color-theme-300: var(--theme-300);
+  --color-theme-400: var(--theme-400);
+  --color-theme-500: var(--theme-500);
+  --color-theme-600: var(--theme-600);
+  --color-theme-700: var(--theme-700);
+  --color-theme-800: var(--theme-800);
+  --color-theme-900: var(--theme-900);
+  --color-theme-950: var(--theme-950);
+  --color-plain-50: var(--plain-50);
+  --color-plain-100: var(--plain-100);
+  --color-plain-200: var(--plain-200);
+  --color-plain-300: var(--plain-300);
+  --color-plain-400: var(--plain-400);
+  --color-plain-500: var(--plain-500);
+  --color-plain-600: var(--plain-600);
+  --color-plain-700: var(--plain-700);
+  --color-plain-800: var(--plain-800);
+  --color-plain-900: var(--plain-900);
+  --color-plain-950: var(--plain-950);
+}
+
 @layer base {
   :root {
+    --theme-50: #f3f7fb;
+    --theme-100: #dce8f0;
+    --theme-200: #c3d7e3;
+    --theme-300: #9ebdce;
+    --theme-400: #7f9fb5;
+    --theme-500: #64849c;
+    --theme-600: #49747d;
+    --theme-700: #356b9f;
+    --theme-800: #22303d;
+    --theme-900: #1f2937;
+    --theme-950: #18212b;
+    --plain-50: #ffffff;
+    --plain-100: #f5efe4;
+    --plain-200: #f1ece2;
+    --plain-300: #d8d3cb;
+    --plain-400: #c6beb4;
+    --plain-500: #b3a89d;
+    --plain-600: #9a8c7d;
+    --plain-700: #7b7166;
+    --plain-800: #62584e;
+    --plain-900: #4c443d;
+    --plain-950: #342f2a;
     font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
     line-height: 1.5;
     font-weight: 400;
@@ -20,7 +67,7 @@
   }
 
   body {
-    @apply m-0 min-h-screen bg-stone-100 text-slate-700;
+    @apply m-0 min-h-screen bg-plain-100 text-theme-600;
   }
 
   #root {
@@ -71,40 +118,40 @@
   }
 
   .PianoKey:focus-visible {
-    outline: 2px solid rgba(37, 99, 235, 0.45);
+    outline: 2px solid color-mix(in srgb, var(--theme-800) 45%, transparent);
     outline-offset: 2px;
   }
 
   .PianoKey--natural {
     height: 100%;
-    background: #f5efe4;
-    box-shadow: inset 0 -6px 0 rgba(141, 113, 82, 0.08);
+    background: var(--plain-100);
+    box-shadow: inset 0 -6px 0 color-mix(in srgb, var(--plain-700) 18%, transparent);
   }
 
   .PianoKey--accidental {
     height: 100%;
-    background: #22303d;
-    box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.22);
+    background: var(--theme-900);
+    box-shadow: inset 0 -5px 0 color-mix(in srgb, var(--theme-950) 22%, transparent);
     padding-bottom: 0.4rem;
   }
 
   .PianoKey--secondary-active.PianoKey--natural:not(.PianoKey--primary-active) {
-    background: #d7eadf;
+    background: var(--plain-200);
   }
 
   .PianoKey--secondary-active.PianoKey--accidental:not(
       .PianoKey--primary-active
     ) {
-    background: #49747d;
+    background: var(--theme-700);
   }
 
   .PianoKey--primary-active.PianoKey--natural {
-    background: #ebb052;
+    background: var(--plain-400);
     transform: translateY(1px);
   }
 
   .PianoKey--primary-active.PianoKey--accidental {
-    background: #356b9f;
+    background: var(--theme-800);
     transform: translateY(1px);
   }
 
@@ -119,15 +166,15 @@
   }
 
   .PianoKey--natural .PianoKey__Label {
-    color: #7b7166;
+    color: var(--plain-700);
   }
 
   .PianoKey--accidental .PianoKey__Label {
-    color: #f1ece2;
+    color: var(--plain-200);
   }
 
   .PianoKey--primary-active .PianoKey__Label {
-    color: #18212b;
+    color: var(--theme-950);
   }
 
   .PianoKey--disabled {
@@ -136,11 +183,11 @@
   }
 
   .PianoKey--disabled.PianoKey--natural {
-    background: #d8d3cb;
+    background: var(--plain-300);
   }
 
   .PianoKey--disabled.PianoKey--accidental {
-    background: #1a232d;
+    background: var(--theme-950);
   }
 
   @media (max-width: 900px) {

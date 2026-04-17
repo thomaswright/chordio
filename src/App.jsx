@@ -840,7 +840,7 @@ function App() {
           Chordio
         </div>
         <div className="flex w-full flex-col gap-3 items-center">
-          <div className="inline-flex max-w-md rounded-2xl bg-stone-200 ">
+          <div className="inline-flex max-w-md rounded-2xl bg-plain-200">
             {modes.map((entry) => {
               const isActive = entry.id === mode;
 
@@ -848,8 +848,8 @@ function App() {
                 <button
                   className={`flex-none rounded-xl px-4 py-2 text-sm font-medium transition md:flex-none ${
                     isActive
-                      ? "bg-slate-900 text-stone-50 shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
+                      ? "bg-theme-900 text-plain-50 shadow-sm"
+                      : "text-theme-600 hover:text-theme-900"
                   }`}
                   key={entry.id}
                   onClick={() => handleModeSelect(entry.id)}
@@ -863,10 +863,10 @@ function App() {
         </div>
         <div className="flex w-full flex-row gap-3 justify-between flex-wrap">
           <div className="flex flex-1 flex-row gap-3 items-center">
-            <div className="mb-1 text-sm font-medium text-slate-700 flex-none">
+            <div className="mb-1 flex-none text-sm font-medium text-theme-600">
               Key Label
             </div>
-            <div className="inline-flex w-fit rounded-2xl bg-stone-200">
+            <div className="inline-flex w-fit rounded-2xl bg-plain-200">
               {pianoLabelModes.map((entry) => {
                 const isActive = entry.id === pianoLabelMode;
 
@@ -874,8 +874,8 @@ function App() {
                   <button
                     className={`flex-1 rounded-xl px-4 py-2 text-sm font-medium transition ${
                       isActive
-                        ? "bg-slate-900 text-stone-50 shadow-sm"
-                        : "text-slate-600 hover:text-slate-900"
+                        ? "bg-theme-900 text-plain-50 shadow-sm"
+                        : "text-theme-600 hover:text-theme-900"
                     }`}
                     key={entry.id}
                     onClick={() => setPianoLabelMode(entry.id)}
@@ -888,10 +888,10 @@ function App() {
             </div>
           </div>
 
-          <label className="max-w-60 flex flex-1 w-full items-center gap-3 text-sm text-slate-700">
+          <label className="flex max-w-60 w-full flex-1 items-center gap-3 text-sm text-theme-600">
             <span className="min-w-0 flex-none font-medium">Volume</span>
             <input
-              className="w-full accent-slate-900"
+              className="w-full accent-theme-900"
               max="100"
               min="0"
               onChange={(event) => setVolume(Number(event.target.value))}
@@ -905,7 +905,7 @@ function App() {
         </div>
       </header>
 
-      <div className="rounded bg-slate-900 p-3 md:p-4">
+      <div className="rounded bg-theme-900 p-3 md:p-4">
         <div className="PianoKeyboard">
           <div className="PianoKeyboard__Naturals">
             {naturalNotes.map(renderKeyButton)}
@@ -934,15 +934,15 @@ function App() {
               <button
                 className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
                   isActive
-                    ? "border-slate-400 bg-slate-200 text-slate-900"
-                    : "border-stone-300 bg-white text-slate-700 hover:border-stone-400"
+                    ? "border-theme-400 bg-plain-200 text-theme-900"
+                    : "border-plain-300 bg-plain-50 text-theme-600 hover:border-plain-400"
                 }`}
                 key={chordType.id}
                 onClick={() => handleChordTypeSelect(chordType)}
                 type="button"
               >
                 <span className="text-sm font-semibold">{chordType.label}</span>
-                <span className="rounded-full bg-slate-900 px-2 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-50">
+                <span className="rounded-full bg-theme-900 px-2 py-1 text-xs font-medium uppercase tracking-[0.2em] text-plain-50">
                   {chordType.shortcut}
                 </span>
               </button>
@@ -953,10 +953,10 @@ function App() {
 
       {mode === "nns" && (
         <div className="mt-4 flex flex-row items-center gap-3">
-          <div className="text-sm font-medium text-slate-800 flex-none">
+          <div className="flex-none text-sm font-medium text-theme-900">
             Degree Label
           </div>
-          <div className="inline-flex rounded-2xl bg-stone-200 w-fit">
+          <div className="inline-flex w-fit rounded-2xl bg-plain-200">
             {degreeDisplayModes.map((entry) => {
               const isActive = entry.id === degreeDisplayMode;
 
@@ -964,8 +964,8 @@ function App() {
                 <button
                   className={`flex-1 flex-none rounded-xl px-4 py-2 text-sm font-medium transition ${
                     isActive
-                      ? "bg-slate-900 text-stone-50 shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
+                      ? "bg-theme-900 text-plain-50 shadow-sm"
+                      : "text-theme-600 hover:text-theme-900"
                   }`}
                   key={entry.id}
                   onClick={() => setDegreeDisplayMode(entry.id)}
@@ -981,7 +981,7 @@ function App() {
 
       {mode === "nns" && (
         <div className="mt-4">
-          <div className="mb-2 text-sm font-medium text-slate-800">
+          <div className="mb-2 text-sm font-medium text-theme-900">
             Chord Degrees
           </div>
           <div className="grid gap-2 grid-cols-4 sm:grid-cols-7">
@@ -990,10 +990,10 @@ function App() {
 
               return (
                 <button
-                  className={`rounded-2xl border px-4 py-3 text-sm font-semibold text-slate-700 transition ${
+                  className={`rounded-2xl border px-4 py-3 text-sm font-semibold text-theme-600 transition ${
                     isActive
-                      ? "border-slate-400 bg-slate-200 text-slate-950"
-                      : "border-stone-300 bg-white hover:border-stone-400"
+                      ? "border-theme-400 bg-plain-200 text-theme-950"
+                      : "border-plain-300 bg-plain-50 hover:border-plain-400"
                   }`}
                   key={toneOption.id}
                   onClick={() => handleNnsChordToneToggle(toneOption.id)}
@@ -1009,7 +1009,7 @@ function App() {
 
       {mode === "nns" && (
         <div className="mt-4">
-          <div className="mb-2 text-sm font-medium text-slate-800">Scale</div>
+          <div className="mb-2 text-sm font-medium text-theme-900">Scale</div>
           <div className="grid gap-2 md:mb-6 md:grid-cols-2 xl:grid-cols-3">
             {nnsScales.map((scale) => {
               const isActive = scale.id === selectedNnsScaleId;
@@ -1018,15 +1018,15 @@ function App() {
                 <button
                   className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
                     isActive
-                      ? "border-slate-400 bg-slate-200 text-slate-950"
-                      : "border-stone-300 bg-white text-slate-700 hover:border-stone-400"
+                    ? "border-theme-400 bg-plain-200 text-theme-950"
+                    : "border-plain-300 bg-plain-50 text-theme-600 hover:border-plain-400"
                   }`}
                   key={scale.id}
                   onClick={() => handleNnsScaleSelect(scale)}
                   type="button"
                 >
                   <span className="text-sm font-semibold">{scale.label}</span>
-                  <span className="rounded-full bg-slate-900 px-2 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-50">
+                  <span className="rounded-full bg-theme-900 px-2 py-1 text-xs font-medium uppercase tracking-[0.2em] text-plain-50">
                     {scale.shortcut}
                   </span>
                 </button>
