@@ -861,7 +861,7 @@ function App() {
             })}
           </div>
         </div>
-        <div className="flex w-full flex-row gap-3 justify-between">
+        <div className="flex w-full flex-row gap-3 justify-between flex-wrap">
           <div className="flex flex-1 flex-row gap-3 items-center">
             <div className="mb-1 text-sm font-medium text-slate-700 flex-none">
               Key Label
@@ -952,6 +952,34 @@ function App() {
       )}
 
       {mode === "nns" && (
+        <div className="mt-4 flex flex-row items-center gap-3">
+          <div className="text-sm font-medium text-slate-800 flex-none">
+            Degree Label
+          </div>
+          <div className="inline-flex rounded-2xl bg-stone-200 w-fit">
+            {degreeDisplayModes.map((entry) => {
+              const isActive = entry.id === degreeDisplayMode;
+
+              return (
+                <button
+                  className={`flex-1 flex-none rounded-xl px-4 py-2 text-sm font-medium transition ${
+                    isActive
+                      ? "bg-slate-900 text-stone-50 shadow-sm"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                  key={entry.id}
+                  onClick={() => setDegreeDisplayMode(entry.id)}
+                  type="button"
+                >
+                  {entry.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {mode === "nns" && (
         <div className="mt-4">
           <div className="mb-2 text-sm font-medium text-slate-800">
             Chord Degrees
@@ -962,10 +990,10 @@ function App() {
 
               return (
                 <button
-                  className={`rounded-lg border px-4 py-3 text-sm font-semibold transition ${
+                  className={`rounded-2xl border px-4 py-3 text-sm font-semibold text-slate-700 transition ${
                     isActive
-                      ? "border-slate-900 bg-slate-900 text-stone-50"
-                      : "border-stone-300 bg-white text-slate-700 hover:border-stone-400"
+                      ? "border-slate-400 bg-slate-200 text-slate-950"
+                      : "border-stone-300 bg-white hover:border-stone-400"
                   }`}
                   key={toneOption.id}
                   onClick={() => handleNnsChordToneToggle(toneOption.id)}
@@ -980,51 +1008,31 @@ function App() {
       )}
 
       {mode === "nns" && (
-        <div className="mt-4 inline-flex w-full rounded-2xl bg-stone-200 md:w-auto">
-          {degreeDisplayModes.map((entry) => {
-            const isActive = entry.id === degreeDisplayMode;
+        <div className="mt-4">
+          <div className="mb-2 text-sm font-medium text-slate-800">Scale</div>
+          <div className="grid gap-2 md:mb-6 md:grid-cols-2 xl:grid-cols-3">
+            {nnsScales.map((scale) => {
+              const isActive = scale.id === selectedNnsScaleId;
 
-            return (
-              <button
-                className={`flex-1 rounded-xl px-4 py-2 text-sm font-medium transition md:flex-none ${
-                  isActive
-                    ? "bg-slate-900 text-stone-50 shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-                key={entry.id}
-                onClick={() => setDegreeDisplayMode(entry.id)}
-                type="button"
-              >
-                {entry.label}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {mode === "nns" && (
-        <div className="mt-4 grid gap-2 md:mb-6 md:grid-cols-2 xl:grid-cols-3">
-          {nnsScales.map((scale) => {
-            const isActive = scale.id === selectedNnsScaleId;
-
-            return (
-              <button
-                className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
-                  isActive
-                    ? "border-slate-400 bg-slate-200 text-slate-950"
-                    : "border-stone-300 bg-white text-slate-700 hover:border-stone-400"
-                }`}
-                key={scale.id}
-                onClick={() => handleNnsScaleSelect(scale)}
-                type="button"
-              >
-                <span className="text-sm font-semibold">{scale.label}</span>
-                <span className="rounded-full bg-slate-900 px-2 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-50">
-                  {scale.shortcut}
-                </span>
-              </button>
-            );
-          })}
+              return (
+                <button
+                  className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
+                    isActive
+                      ? "border-slate-400 bg-slate-200 text-slate-950"
+                      : "border-stone-300 bg-white text-slate-700 hover:border-stone-400"
+                  }`}
+                  key={scale.id}
+                  onClick={() => handleNnsScaleSelect(scale)}
+                  type="button"
+                >
+                  <span className="text-sm font-semibold">{scale.label}</span>
+                  <span className="rounded-full bg-slate-900 px-2 py-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-50">
+                    {scale.shortcut}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
     </main>
