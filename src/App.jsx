@@ -138,6 +138,7 @@ const lowestSampleMidiNumber = Tone.Frequency("A0").toMidi();
 const highestSampleMidiNumber = Tone.Frequency("C8").toMidi();
 const minOctaveShift = Math.ceil((lowestSampleMidiNumber - firstNote) / 12);
 const maxOctaveShift = Math.floor((highestSampleMidiNumber - lastNote) / 12);
+const pianoSamplesBaseUrl = `${import.meta.env.BASE_URL}piano-samples/`;
 
 const nnsScales = [
   {
@@ -511,7 +512,7 @@ function App() {
     const sampler = new Tone.Sampler({
       urls: pianoSampleUrls,
       release: 1.4,
-      baseUrl: "/piano-samples/",
+      baseUrl: pianoSamplesBaseUrl,
       onload: () => {
         setAudioStatus("ready");
       },

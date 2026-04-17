@@ -5,7 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "https://thomaswright.github.io/chordio",
+  base: "/chordio/",
   plugins: [
     tailwindcss(),
     react(),
