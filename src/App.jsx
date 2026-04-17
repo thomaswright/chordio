@@ -784,7 +784,7 @@ function App() {
         return;
       }
 
-      if (event.key === "+") {
+      if (event.key === "=") {
         event.preventDefault();
         handleOctaveShift(1);
         return;
