@@ -840,7 +840,7 @@ function App() {
           Chordio
         </div>
         <div className="flex w-full flex-col gap-3 items-center">
-          <div className="inline-flex max-w-md rounded-2xl bg-plain-200">
+          <div className="inline-flex max-w-md rounded-2xl bg-plain-300">
             {modes.map((entry) => {
               const isActive = entry.id === mode;
 
@@ -863,10 +863,10 @@ function App() {
         </div>
         <div className="flex w-full flex-row gap-3 justify-between flex-wrap">
           <div className="flex flex-1 flex-row gap-3 items-center">
-            <div className="mb-1 flex-none text-sm font-medium text-theme-600">
+            <div className="mb-1 flex-none text-sm font-medium text-theme-800">
               Key Label
             </div>
-            <div className="inline-flex w-fit rounded-2xl bg-plain-200">
+            <div className="inline-flex w-fit rounded-2xl bg-plain-300">
               {pianoLabelModes.map((entry) => {
                 const isActive = entry.id === pianoLabelMode;
 
@@ -888,7 +888,7 @@ function App() {
             </div>
           </div>
 
-          <label className="flex max-w-60 w-full flex-1 items-center gap-3 text-sm text-theme-600">
+          <label className="flex max-w-60 w-full flex-1 items-center gap-3 text-sm text-theme-800">
             <span className="min-w-0 flex-none font-medium">Volume</span>
             <input
               className="w-full accent-theme-900"
@@ -934,7 +934,7 @@ function App() {
               <button
                 className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
                   isActive
-                    ? "border-theme-400 bg-plain-200 text-theme-900"
+                    ? "border-theme-400 bg-theme-200 text-theme-900"
                     : "border-plain-300 bg-plain-50 text-theme-600 hover:border-plain-400"
                 }`}
                 key={chordType.id}
@@ -956,13 +956,13 @@ function App() {
           <div className="flex-none text-sm font-medium text-theme-900">
             Degree Label
           </div>
-          <div className="inline-flex w-fit rounded-2xl bg-plain-200">
+          <div className="inline-flex w-fit rounded-2xl bg-plain-300">
             {degreeDisplayModes.map((entry) => {
               const isActive = entry.id === degreeDisplayMode;
 
               return (
                 <button
-                  className={`flex-1 flex-none rounded-xl px-4 py-2 text-sm font-medium transition ${
+                  className={` flex-none rounded-xl px-4 py-2 text-sm font-medium transition ${
                     isActive
                       ? "bg-theme-900 text-plain-50 shadow-sm"
                       : "text-theme-600 hover:text-theme-900"
@@ -992,7 +992,7 @@ function App() {
                 <button
                   className={`rounded-2xl border px-4 py-3 text-sm font-semibold text-theme-600 transition ${
                     isActive
-                      ? "border-theme-400 bg-plain-200 text-theme-950"
+                      ? "border-theme-400 bg-theme-200 text-theme-950"
                       : "border-plain-300 bg-plain-50 hover:border-plain-400"
                   }`}
                   key={toneOption.id}
@@ -1018,8 +1018,8 @@ function App() {
                 <button
                   className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
                     isActive
-                    ? "border-theme-400 bg-plain-200 text-theme-950"
-                    : "border-plain-300 bg-plain-50 text-theme-600 hover:border-plain-400"
+                      ? "border-theme-400 bg-theme-200 text-theme-950"
+                      : "border-plain-300 bg-plain-50 text-theme-600 hover:border-plain-400"
                   }`}
                   key={scale.id}
                   onClick={() => handleNnsScaleSelect(scale)}

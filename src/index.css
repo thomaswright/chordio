@@ -124,19 +124,21 @@
 
   .PianoKey--natural {
     height: 100%;
-    background: var(--plain-100);
-    box-shadow: inset 0 -6px 0 color-mix(in srgb, var(--plain-700) 18%, transparent);
+    background: var(--plain-50);
+    box-shadow: inset 0 -6px 0
+      color-mix(in srgb, var(--plain-700) 18%, transparent);
   }
 
   .PianoKey--accidental {
     height: 100%;
     background: var(--theme-900);
-    box-shadow: inset 0 -5px 0 color-mix(in srgb, var(--theme-950) 22%, transparent);
+    box-shadow: inset 0 -5px 0
+      color-mix(in srgb, var(--theme-950) 22%, transparent);
     padding-bottom: 0.4rem;
   }
 
   .PianoKey--secondary-active.PianoKey--natural:not(.PianoKey--primary-active) {
-    background: var(--plain-200);
+    background: var(--theme-100);
   }
 
   .PianoKey--secondary-active.PianoKey--accidental:not(
@@ -146,7 +148,7 @@
   }
 
   .PianoKey--primary-active.PianoKey--natural {
-    background: var(--plain-400);
+    background: var(--theme-400);
     transform: translateY(1px);
   }
 
