@@ -934,7 +934,7 @@ function App() {
               <button
                 className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
                   isActive
-                    ? "border-amber-400 bg-amber-100 text-slate-900"
+                    ? "border-slate-400 bg-slate-200 text-slate-900"
                     : "border-stone-300 bg-white text-slate-700 hover:border-stone-400"
                 }`}
                 key={chordType.id}
@@ -1011,7 +1011,7 @@ function App() {
               <button
                 className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
                   isActive
-                    ? "border-cyan-400 bg-cyan-100 text-slate-950"
+                    ? "border-slate-400 bg-slate-200 text-slate-950"
                     : "border-stone-300 bg-white text-slate-700 hover:border-stone-400"
                 }`}
                 key={scale.id}
