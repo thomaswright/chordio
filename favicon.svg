@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <g fill="oklch(0.89 0.02 87.52)">
+    <rect x="6" y="8" width="16" height="48" rx="2" />
+    <rect x="24" y="8" width="16" height="48" rx="2" />
+    <rect x="42" y="8" width="16" height="48" rx="2" />
+  </g>
+  <g fill="oklch(0 0 75)">
+
+
+    <rect x="18" y="8" width="10" height="36" rx="2" />
+    <rect x="36" y="8" width="10" height="36" rx="2" />
+  </g>
+
+</svg>
