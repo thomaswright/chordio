@@ -134,6 +134,10 @@ const nnsScaleShortcuts = [
   "c",
 ];
 const tonicMidiNumber = Tone.Frequency("C3").toMidi();
+const lowestSampleMidiNumber = Tone.Frequency("A0").toMidi();
+const highestSampleMidiNumber = Tone.Frequency("C8").toMidi();
+const minOctaveShift = Math.ceil((lowestSampleMidiNumber - firstNote) / 12);
+const maxOctaveShift = Math.floor((highestSampleMidiNumber - lastNote) / 12);
 
 const nnsScales = [
   {
@@ -249,11 +253,13 @@ const pianoSampleUrls = {
   C8: "C8v10.mp3",
 };
 
-const pianoNotes = (() => {
+const getPianoNotes = (octaveShift = 0) => {
   let naturalIndex = -1;
+  const semitoneOffset = octaveShift * 12;
 
   return midiNumbersInRange.map((midiNumber) => {
-    const noteName = Tone.Frequency(midiNumber, "midi").toNote();
+    const shiftedMidiNumber = midiNumber + semitoneOffset;
+    const noteName = Tone.Frequency(shiftedMidiNumber, "midi").toNote();
     const isAccidental = noteName.includes("#");
 
     if (!isAccidental) {
@@ -261,28 +267,27 @@ const pianoNotes = (() => {
     }
 
     return {
-      midiNumber,
+      midiNumber: shiftedMidiNumber,
       noteName,
       isAccidental,
       naturalIndex,
       keyboardShortcut: shortcutByMidiNumber[midiNumber],
     };
   });
-})();
+};
 
-const naturalNotes = pianoNotes.filter((note) => !note.isAccidental);
-const accidentalNotes = pianoNotes.filter((note) => note.isAccidental);
-const naturalKeyCount = naturalNotes.length;
+const getTonicMidiNumber = (octaveShift = 0) =>
+  tonicMidiNumber + octaveShift * 12;
 
-const getScaleStep = (midiNumber, scaleIntervals) => {
-  const distanceFromTonic = midiNumber - tonicMidiNumber;
+const getScaleStep = (midiNumber, scaleIntervals, activeTonicMidiNumber) => {
+  const distanceFromActiveTonic = midiNumber - activeTonicMidiNumber;
 
-  if (distanceFromTonic < 0) {
+  if (distanceFromActiveTonic < 0) {
     return null;
   }
 
-  const octaveOffset = Math.floor(distanceFromTonic / 12);
-  const intervalWithinOctave = distanceFromTonic % 12;
+  const octaveOffset = Math.floor(distanceFromActiveTonic / 12);
+  const intervalWithinOctave = distanceFromActiveTonic % 12;
   const degreeIndex = scaleIntervals.indexOf(intervalWithinOctave);
 
   if (degreeIndex === -1) {
@@ -292,8 +297,12 @@ const getScaleStep = (midiNumber, scaleIntervals) => {
   return octaveOffset * scaleIntervals.length + degreeIndex;
 };
 
-const getScaleDegree = (midiNumber, scaleIntervals) => {
-  const scaleStep = getScaleStep(midiNumber, scaleIntervals);
+const getScaleDegree = (midiNumber, scaleIntervals, activeTonicMidiNumber) => {
+  const scaleStep = getScaleStep(
+    midiNumber,
+    scaleIntervals,
+    activeTonicMidiNumber,
+  );
 
   if (scaleStep === null) {
     return null;
@@ -324,24 +333,38 @@ const nnsChordToneOptions = [
 
 const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII"];
 
-const getScaleMidiNumberAtStep = (scaleStep, scaleIntervals) => {
+const getScaleMidiNumberAtStep = (
+  scaleStep,
+  scaleIntervals,
+  activeTonicMidiNumber,
+) => {
   const wrappedIndex = scaleStep % scaleIntervals.length;
   const octaveOffset = Math.floor(scaleStep / scaleIntervals.length) * 12;
 
-  return tonicMidiNumber + scaleIntervals[wrappedIndex] + octaveOffset;
+  return activeTonicMidiNumber + scaleIntervals[wrappedIndex] + octaveOffset;
 };
 
-const getRomanNumeralForScaleStep = (scaleStep, scaleIntervals) => {
+const getRomanNumeralForScaleStep = (
+  scaleStep,
+  scaleIntervals,
+  activeTonicMidiNumber,
+) => {
   const degree = (scaleStep % scaleIntervals.length) + 1;
   const numeral = romanNumerals[degree - 1] ?? String(degree);
-  const rootMidiNumber = getScaleMidiNumberAtStep(scaleStep, scaleIntervals);
+  const rootMidiNumber = getScaleMidiNumberAtStep(
+    scaleStep,
+    scaleIntervals,
+    activeTonicMidiNumber,
+  );
   const thirdMidiNumber = getScaleMidiNumberAtStep(
     scaleStep + 2,
     scaleIntervals,
+    activeTonicMidiNumber,
   );
   const fifthMidiNumber = getScaleMidiNumberAtStep(
     scaleStep + 4,
     scaleIntervals,
+    activeTonicMidiNumber,
   );
   const thirdInterval = thirdMidiNumber - rootMidiNumber;
   const fifthInterval = fifthMidiNumber - rootMidiNumber;
@@ -361,16 +384,26 @@ const getRomanNumeralForScaleStep = (scaleStep, scaleIntervals) => {
   return numeral;
 };
 
-const getNnsLabelForScaleStep = (scaleStep, scaleIntervals) => {
+const getNnsLabelForScaleStep = (
+  scaleStep,
+  scaleIntervals,
+  activeTonicMidiNumber,
+) => {
   const degree = (scaleStep % scaleIntervals.length) + 1;
-  const rootMidiNumber = getScaleMidiNumberAtStep(scaleStep, scaleIntervals);
+  const rootMidiNumber = getScaleMidiNumberAtStep(
+    scaleStep,
+    scaleIntervals,
+    activeTonicMidiNumber,
+  );
   const thirdMidiNumber = getScaleMidiNumberAtStep(
     scaleStep + 2,
     scaleIntervals,
+    activeTonicMidiNumber,
   );
   const fifthMidiNumber = getScaleMidiNumberAtStep(
     scaleStep + 4,
     scaleIntervals,
+    activeTonicMidiNumber,
   );
   const thirdInterval = thirdMidiNumber - rootMidiNumber;
   const fifthInterval = fifthMidiNumber - rootMidiNumber;
@@ -390,7 +423,12 @@ const getNnsLabelForScaleStep = (scaleStep, scaleIntervals) => {
   return String(degree);
 };
 
-const formatScaleDegree = (scaleStep, displayMode, scaleIntervals) => {
+const formatScaleDegree = (
+  scaleStep,
+  displayMode,
+  scaleIntervals,
+  activeTonicMidiNumber,
+) => {
   if (scaleStep === null) {
     return null;
   }
@@ -400,10 +438,18 @@ const formatScaleDegree = (scaleStep, displayMode, scaleIntervals) => {
   }
 
   if (displayMode === "roman") {
-    return getRomanNumeralForScaleStep(scaleStep, scaleIntervals);
+    return getRomanNumeralForScaleStep(
+      scaleStep,
+      scaleIntervals,
+      activeTonicMidiNumber,
+    );
   }
 
-  return getNnsLabelForScaleStep(scaleStep, scaleIntervals);
+  return getNnsLabelForScaleStep(
+    scaleStep,
+    scaleIntervals,
+    activeTonicMidiNumber,
+  );
 };
 
 const getDisplayNoteName = (noteName) => noteName.replace(/[0-9]/g, "");
@@ -423,6 +469,7 @@ function App() {
   const modeRef = useRef("nns");
   const chordTypeRef = useRef(defaultChordType);
   const nnsScaleRef = useRef(defaultNnsScale);
+  const octaveShiftRef = useRef(0);
   const startVoiceRef = useRef(null);
   const releaseVoiceRef = useRef(null);
   const stopAllVoicesRef = useRef(null);
@@ -440,10 +487,19 @@ function App() {
     0, 2, 4,
   ]);
   const [volume, setVolume] = useState(80);
+  const [octaveShift, setOctaveShift] = useState(0);
   const [activeTriggerIds, setActiveTriggerIds] = useState([]);
   const [secondaryActiveMidiNumbers, setSecondaryActiveMidiNumbers] = useState(
     [],
   );
+  const pianoNotes = getPianoNotes(octaveShift);
+  const currentTonicMidiNumber = getTonicMidiNumber(octaveShift);
+  const naturalNotes = pianoNotes.filter((note) => !note.isAccidental);
+  const accidentalNotes = pianoNotes.filter((note) => note.isAccidental);
+  const naturalKeyCount = naturalNotes.length;
+  const canShiftOctaveDown = octaveShift > minOctaveShift;
+  const canShiftOctaveUp = octaveShift < maxOctaveShift;
+  const pianoRangeLabel = `${naturalNotes[0]?.noteName ?? ""}`;
 
   const createSampler = () => {
     if (samplerRef.current) {
@@ -523,7 +579,11 @@ function App() {
 
     if (selectedMode === "nns") {
       const midiNumber = Number(triggerId);
-      const scaleStep = getScaleStep(midiNumber, selectedNnsScale.intervals);
+      const scaleStep = getScaleStep(
+        midiNumber,
+        selectedNnsScale.intervals,
+        getTonicMidiNumber(octaveShiftRef.current),
+      );
 
       if (scaleStep === null) {
         return null;
@@ -532,17 +592,14 @@ function App() {
       const chordSteps = selectedNnsChordToneIds.map(
         (toneId) => scaleStep + toneId,
       );
-      const midiNumbers = chordSteps.map((step) => {
-        const wrappedIndex = step % selectedNnsScale.intervals.length;
-        const octaveOffset =
-          Math.floor(step / selectedNnsScale.intervals.length) * 12;
-
-        return (
-          tonicMidiNumber +
-          selectedNnsScale.intervals[wrappedIndex] +
-          octaveOffset
-        );
-      });
+      const activeTonicMidiNumber = getTonicMidiNumber(octaveShiftRef.current);
+      const midiNumbers = chordSteps.map((step) =>
+        getScaleMidiNumberAtStep(
+          step,
+          selectedNnsScale.intervals,
+          activeTonicMidiNumber,
+        ),
+      );
 
       return {
         label: `${Tone.Frequency(midiNumber, "midi").toNote()} (${selectedNnsScale.label})`,
@@ -647,6 +704,23 @@ function App() {
     });
   };
 
+  const handleOctaveShift = (delta) => {
+    setOctaveShift((currentOctaveShift) => {
+      const nextOctaveShift = Math.min(
+        maxOctaveShift,
+        Math.max(minOctaveShift, currentOctaveShift + delta),
+      );
+
+      if (nextOctaveShift === currentOctaveShift) {
+        return currentOctaveShift;
+      }
+
+      stopAllVoices();
+      pressedKeyboardKeysRef.current.clear();
+      return nextOctaveShift;
+    });
+  };
+
   useEffect(() => {
     modeRef.current = mode;
   }, [mode]);
@@ -662,6 +736,10 @@ function App() {
       nnsScales.find((scale) => scale.id === selectedNnsScaleId) ??
       defaultNnsScale;
   }, [selectedNnsScaleId]);
+
+  useEffect(() => {
+    octaveShiftRef.current = octaveShift;
+  }, [octaveShift]);
 
   useEffect(() => {
     if (samplerRef.current) {
@@ -698,6 +776,19 @@ function App() {
       }
 
       const key = event.key.toLowerCase();
+
+      if (event.key === "-") {
+        event.preventDefault();
+        handleOctaveShift(-1);
+        return;
+      }
+
+      if (event.key === "+") {
+        event.preventDefault();
+        handleOctaveShift(1);
+        return;
+      }
+
       const chordType = chordTypeByShortcut[key];
       const nnsScale = nnsScaleByShortcut[key];
 
@@ -713,7 +804,11 @@ function App() {
         return;
       }
 
-      const midiNumber = midiNumberByShortcut[key];
+      const baseMidiNumber = midiNumberByShortcut[key];
+      const midiNumber =
+        baseMidiNumber === undefined
+          ? undefined
+          : baseMidiNumber + octaveShiftRef.current * 12;
 
       if (!midiNumber || pressedKeyboardKeysRef.current.has(key)) {
         return;
@@ -721,7 +816,11 @@ function App() {
 
       if (
         modeRef.current === "nns" &&
-        getScaleStep(midiNumber, nnsScaleRef.current.intervals) === null
+        getScaleStep(
+          midiNumber,
+          nnsScaleRef.current.intervals,
+          getTonicMidiNumber(octaveShiftRef.current),
+        ) === null
       ) {
         return;
       }
@@ -733,7 +832,11 @@ function App() {
 
     const handleKeyUp = (event) => {
       const key = event.key.toLowerCase();
-      const midiNumber = midiNumberByShortcut[key];
+      const baseMidiNumber = midiNumberByShortcut[key];
+      const midiNumber =
+        baseMidiNumber === undefined
+          ? undefined
+          : baseMidiNumber + octaveShiftRef.current * 12;
 
       if (!midiNumber) {
         return;
@@ -775,12 +878,17 @@ function App() {
     );
     const scaleStep =
       mode === "nns"
-        ? getScaleStep(note.midiNumber, nnsScaleRef.current.intervals)
+        ? getScaleStep(
+            note.midiNumber,
+            nnsScaleRef.current.intervals,
+            currentTonicMidiNumber,
+          )
         : null;
     const displayDegree = formatScaleDegree(
       scaleStep,
       degreeDisplayMode,
       nnsScaleRef.current.intervals,
+      currentTonicMidiNumber,
     );
     const isNnsScaleNote = mode === "nns" && scaleStep !== null;
     const isDisabledInNns = mode === "nns" && !isNnsScaleNote;
@@ -862,7 +970,7 @@ function App() {
           </div>
         </div>
         <div className="flex w-full flex-row gap-3 justify-between flex-wrap">
-          <div className="flex flex-1 flex-row gap-3 items-center">
+          <div className="flex flex-none flex-row gap-3 items-center">
             <div className="mb-1 flex-none text-sm font-medium text-theme-800">
               Key Label
             </div>
@@ -888,7 +996,31 @@ function App() {
             </div>
           </div>
 
-          <label className="flex max-w-60 w-full flex-1 items-center gap-3 text-sm text-theme-800">
+          <div className="flex flex-none items-center gap-3 text-sm text-theme-800">
+            <div className="inline-flex w-fit items-center rounded-2xl bg-plain-300">
+              <button
+                className="rounded-l-xl px-4 py-1 text-lg font-medium text-theme-800 transition enabled:hover:text-theme-900 disabled:cursor-not-allowed disabled:opacity-40"
+                disabled={!canShiftOctaveDown}
+                onClick={() => handleOctaveShift(-1)}
+                type="button"
+              >
+                -
+              </button>
+              <div className="w-fit px-2 text-center font-medium tabular-nums text-theme-900">
+                {pianoRangeLabel}
+              </div>
+              <button
+                className="rounded-r-xl px-4 py-1 text-lg font-medium text-theme-800 transition enabled:hover:text-theme-900 disabled:cursor-not-allowed disabled:opacity-40"
+                disabled={!canShiftOctaveUp}
+                onClick={() => handleOctaveShift(1)}
+                type="button"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          <label className="flex max-w-60 w-full flex-none items-center gap-3 text-sm text-theme-800">
             <span className="min-w-0 flex-none font-medium">Volume</span>
             <input
               className="w-full accent-theme-900"
