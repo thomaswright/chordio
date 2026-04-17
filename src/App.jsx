@@ -305,6 +305,7 @@ const getScaleDegree = (midiNumber, scaleIntervals) => {
 const degreeDisplayModes = [
   { id: "roman", label: "Roman Numeral" },
   { id: "nns", label: "NNS" },
+  { id: "none", label: "None" },
 ];
 const pianoLabelModes = [
   { id: "key", label: "Key" },
@@ -391,6 +392,10 @@ const getNnsLabelForScaleStep = (scaleStep, scaleIntervals) => {
 
 const formatScaleDegree = (scaleStep, displayMode, scaleIntervals) => {
   if (scaleStep === null) {
+    return null;
+  }
+
+  if (displayMode === "none") {
     return null;
   }
 
@@ -829,14 +834,39 @@ function App() {
   };
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-6xl p-4 md:p-8">
-      <header className="mb-4 flex flex-col gap-4 md:mb-6 md:flex-row md:items-center md:justify-between">
-        <div className="flex w-full max-w-md flex-col gap-3">
-          <div className="flex flex-row gap-3 items-center">
+    <main className="mx-auto min-h-screen w-full max-w-6xl p-4">
+      <header className="mb-4 flex flex-col gap-3  ">
+        <div className="w-full flex flex-row items-center justify-center font-black text-3xl leading-none -mb-2">
+          Chordio
+        </div>
+        <div className="flex w-full flex-col gap-3 items-center">
+          <div className="inline-flex max-w-md rounded-2xl bg-stone-200 ">
+            {modes.map((entry) => {
+              const isActive = entry.id === mode;
+
+              return (
+                <button
+                  className={`flex-none rounded-xl px-4 py-2 text-sm font-medium transition md:flex-none ${
+                    isActive
+                      ? "bg-slate-900 text-stone-50 shadow-sm"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                  key={entry.id}
+                  onClick={() => handleModeSelect(entry.id)}
+                  type="button"
+                >
+                  {entry.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div className="flex w-full flex-row gap-3 justify-between">
+          <div className="flex flex-1 flex-row gap-3 items-center">
             <div className="mb-1 text-sm font-medium text-slate-700 flex-none">
-              Piano Label
+              Key Label
             </div>
-            <div className="inline-flex w-full rounded-2xl bg-stone-200">
+            <div className="inline-flex w-fit rounded-2xl bg-stone-200">
               {pianoLabelModes.map((entry) => {
                 const isActive = entry.id === pianoLabelMode;
 
@@ -858,7 +888,7 @@ function App() {
             </div>
           </div>
 
-          <label className="flex w-full items-center gap-3 text-sm text-slate-700">
+          <label className="max-w-60 flex flex-1 w-full items-center gap-3 text-sm text-slate-700">
             <span className="min-w-0 flex-none font-medium">Volume</span>
             <input
               className="w-full accent-slate-900"
@@ -872,37 +902,6 @@ function App() {
               {volume}
             </span>
           </label>
-        </div>
-        <div className="space-y-1">
-          <h1 className="text-lg font-semibold text-slate-900 md:text-xl">
-            Keyboard Mapping
-          </h1>
-          <p className="text-sm text-slate-600">
-            {modes.find((entry) => entry.id === mode)?.description}
-          </p>
-        </div>
-
-        <div className="flex w-full flex-col gap-3 md:w-auto md:items-end">
-          <div className="inline-flex w-full rounded-2xl bg-stone-200 md:w-auto">
-            {modes.map((entry) => {
-              const isActive = entry.id === mode;
-
-              return (
-                <button
-                  className={`flex-1 rounded-xl px-4 py-2 text-sm font-medium transition md:flex-none ${
-                    isActive
-                      ? "bg-slate-900 text-stone-50 shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                  key={entry.id}
-                  onClick={() => handleModeSelect(entry.id)}
-                  type="button"
-                >
-                  {entry.label}
-                </button>
-              );
-            })}
-          </div>
         </div>
       </header>
 
@@ -963,7 +962,7 @@ function App() {
 
               return (
                 <button
-                  className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
+                  className={`rounded-lg border px-4 py-3 text-sm font-semibold transition ${
                     isActive
                       ? "border-slate-900 bg-slate-900 text-stone-50"
                       : "border-stone-300 bg-white text-slate-700 hover:border-stone-400"
